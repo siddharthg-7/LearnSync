@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Home, BookOpen, Users, Calendar, HelpCircle, BarChart3, Menu, X, LogOut, User, Sparkles } from 'lucide-react';
+import { Home, BookOpen, Users, Calendar, HelpCircle, Bell, GraduationCap, Menu, X, LogOut, User, Sparkles } from 'lucide-react';
 import ChatbotPanel from './ChatbotPanel';
 
 const Layout = ({ children }) => {

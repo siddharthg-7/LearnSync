@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Plus, X, Upload, FileText, File, ChevronDown, ChevronUp, Users, GraduationCap, BookOpen, ShieldCheck, Trash2 } from 'lucide-react'
-import { mockCourses as initialStudentCourses } from '../../../LearnSync - Copy/src/data/mockData'
+import { mockNGOCourses as initialStudentCourses } from '../../utils/mockData'
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 const TRAINING_TOPICS = ['Classroom Management', 'Child Psychology', 'Lesson Planning', 'Assessment Techniques', 'Digital Tools', 'Communication Skills']

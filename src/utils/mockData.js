@@ -423,3 +423,46 @@ export const initializeMockData = () => {
     currentRole: 'student'
   };
 };
+
+// ── NGO admin mock data (used by admin pages) ─────────────────────────────────
+
+export const mockMentors = [
+  { id: 1, name: 'Priya Sharma', subjects: ['Math', 'Science'], studentsAssigned: 8, sessionsCompleted: 24, avgImprovement: 18, effectivenessScore: 87, attendance: 92, status: 'active', progress: 87 },
+  { id: 2, name: 'Rahul Verma', subjects: ['English', 'Math'], studentsAssigned: 6, sessionsCompleted: 18, avgImprovement: 12, effectivenessScore: 74, attendance: 85, status: 'active', progress: 74 },
+  { id: 3, name: 'Anita Desai', subjects: ['Science'], studentsAssigned: 5, sessionsCompleted: 10, avgImprovement: 6, effectivenessScore: 48, attendance: 70, status: 'low-performing', progress: 48 },
+  { id: 4, name: 'Karan Mehta', subjects: ['Math'], studentsAssigned: 7, sessionsCompleted: 20, avgImprovement: 15, effectivenessScore: 81, attendance: 90, status: 'active', progress: 81 },
+  { id: 5, name: 'Sneha Patil', subjects: ['English'], studentsAssigned: 4, sessionsCompleted: 8, avgImprovement: 4, effectivenessScore: 42, attendance: 65, status: 'low-performing', progress: 42 },
+  { id: 6, name: 'Amit Joshi', subjects: ['Science', 'Math'], studentsAssigned: 9, sessionsCompleted: 28, avgImprovement: 20, effectivenessScore: 93, attendance: 96, status: 'active', progress: 93 },
+]
+
+export const mockStudents = [
+  { id: 1, name: 'Aarav Singh', age: 13, class: '8th', assignedMentor: 'Priya Sharma', subjects: ['Math', 'Science'], overallProgress: 78, sessions: 12, attendance: 90, avgScore: 74, weakTopics: ['Fractions'], status: 'active' },
+  { id: 2, name: 'Diya Patel', age: 11, class: '6th', assignedMentor: 'Rahul Verma', subjects: ['English', 'Math'], overallProgress: 55, sessions: 8, attendance: 72, avgScore: 58, weakTopics: ['Grammar', 'Division'], status: 'at-risk' },
+  { id: 3, name: 'Rohan Gupta', age: 15, class: '10th', assignedMentor: 'Amit Joshi', subjects: ['Math', 'Science'], overallProgress: 91, sessions: 18, attendance: 95, avgScore: 88, weakTopics: [], status: 'active' },
+  { id: 4, name: 'Meera Nair', age: 10, class: '5th', assignedMentor: 'Anita Desai', subjects: ['Science'], overallProgress: 42, sessions: 5, attendance: 60, avgScore: 45, weakTopics: ['Plants', 'Animals'], status: 'at-risk' },
+  { id: 5, name: 'Arjun Rao', age: 14, class: '9th', assignedMentor: 'Karan Mehta', subjects: ['Math'], overallProgress: 83, sessions: 15, attendance: 88, avgScore: 80, weakTopics: ['Trigonometry'], status: 'active' },
+  { id: 6, name: 'Priya Iyer', age: 12, class: '7th', assignedMentor: 'Sneha Patil', subjects: ['English'], overallProgress: 38, sessions: 4, attendance: 55, avgScore: 40, weakTopics: ['Writing', 'Comprehension'], status: 'at-risk' },
+  { id: 7, name: 'Kabir Malhotra', age: 16, class: '11th', assignedMentor: 'Amit Joshi', subjects: ['Math', 'Science'], overallProgress: 88, sessions: 20, attendance: 93, avgScore: 85, weakTopics: [], status: 'active' },
+  { id: 8, name: 'Ananya Sharma', age: 9, class: '4th', assignedMentor: 'Priya Sharma', subjects: ['Math', 'English'], overallProgress: 65, sessions: 10, attendance: 80, avgScore: 62, weakTopics: ['Subtraction'], status: 'active' },
+]
+
+export const mockNGOCourses = [
+  { id: 1, name: 'Mathematics Fundamentals', subject: 'Math', level: 'Beginner', students: 18, mentors: 3, avgProgress: 72, modules: [{ id: 1, name: 'Fractions Basics.pdf', type: 'pdf', size: '1.2 MB', uploadedAt: '2026-03-10' }, { id: 2, name: 'Addition & Subtraction.docx', type: 'docx', size: '840 KB', uploadedAt: '2026-03-12' }] },
+  { id: 2, name: 'English Grammar & Writing', subject: 'English', level: 'Intermediate', students: 12, mentors: 2, avgProgress: 58, modules: [{ id: 1, name: 'Grammar Rules.pdf', type: 'pdf', size: '2.1 MB', uploadedAt: '2026-03-08' }] },
+  { id: 3, name: 'Science Explorers', subject: 'Science', level: 'Beginner', students: 15, mentors: 2, avgProgress: 65, modules: [{ id: 1, name: 'Plants & Animals.pptx', type: 'pptx', size: '3.4 MB', uploadedAt: '2026-03-15' }, { id: 2, name: 'Lab Notes.pdf', type: 'pdf', size: '980 KB', uploadedAt: '2026-03-18' }] },
+  { id: 4, name: 'Advanced Mathematics', subject: 'Math', level: 'Advanced', students: 9, mentors: 2, avgProgress: 84, modules: [{ id: 1, name: 'Trigonometry.pdf', type: 'pdf', size: '1.8 MB', uploadedAt: '2026-03-20' }] },
+]
+
+export const mockNotifications = [
+  { id: 1, type: 'student-flag', status: 'unread', priority: 'high', flaggedBy: 'Priya Sharma', student: 'Ananya Sharma', studentId: 8, issue: 'Personal Issues', description: 'Student has been emotionally withdrawn for the past 2 weeks. Mentioned family problems affecting her ability to focus. Requires counselling support beyond my capacity.', date: '2026-03-28' },
+  { id: 2, type: 'student-flag', status: 'unread', priority: 'high', flaggedBy: 'Rahul Verma', student: 'Diya Patel', studentId: 2, issue: 'Attendance Concern', description: 'Student has missed 4 consecutive sessions without explanation. Parents not responding to communication. Needs NGO intervention.', date: '2026-03-27' },
+  { id: 3, type: 'student-flag', status: 'read', priority: 'medium', flaggedBy: 'Sneha Patil', student: 'Priya Iyer', studentId: 6, issue: 'Learning Difficulty', description: 'Student is struggling significantly with comprehension. Despite multiple approaches, no improvement. May need a specialist evaluation.', date: '2026-03-25' },
+  { id: 4, type: 'mentor-performance', status: 'unread', priority: 'high', mentor: 'Sneha Patil', mentorId: 5, description: 'Effectiveness score has dropped from 61% to 42% over the last 4 weeks. Student improvement rate is consistently below threshold. Immediate review recommended.', trend: 'decreasing', scoreHistory: [61, 55, 49, 42], date: '2026-03-29' },
+  { id: 5, type: 'mentor-performance', status: 'read', priority: 'medium', mentor: 'Anita Desai', mentorId: 3, description: 'No improvement in effectiveness score for 3 consecutive weeks. Currently at 48%. Students assigned are showing stagnant progress.', trend: 'stagnant', scoreHistory: [48, 47, 49, 48], date: '2026-03-22' },
+]
+
+export const mockStats = {
+  totalStudents: 47, activeMentors: 6, sessionsThisWeek: 34,
+  avgStudentScore: 68, attendanceRate: 82, highRiskStudents: 5,
+  lowPerformingMentors: 3, decliningSubjects: 2,
+}

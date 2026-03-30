@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AlertTriangle, TrendingDown, User, GraduationCap, CheckCheck, Trash2, Filter } from 'lucide-react'
-import { mockNotifications as initialNotifications } from '../../../LearnSync - Copy/src/data/mockData'
+import { mockNotifications as initialNotifications } from '../../utils/mockData'
 
 const PRIORITY_STYLES = {
   high: 'bg-red-50 border-red-200 text-red-600',

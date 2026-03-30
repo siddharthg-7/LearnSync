@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Trash2, Search, ChevronUp, ChevronDown, X, Users, BookOpen, TrendingUp, Star, Calendar } from 'lucide-react'
-import { mockMentors as initialMentors, mockStudents } from '../../../LearnSync - Copy/src/data/mockData'
+import { mockMentors as initialMentors, mockStudents } from '../../utils/mockData'
 
 function ProgressBar({ value }) {
   const color = value >= 80 ? 'bg-green-500' : value >= 60 ? 'bg-blue-500' : 'bg-red-400'
