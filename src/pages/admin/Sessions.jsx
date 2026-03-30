@@ -1,151 +1,159 @@
-import { useApp } from '../../context/AppContext';
-import Card from '../../components/Card';
-import Button from '../../components/Button';
-import { Calendar, CheckCircle, XCircle, Clock, User } from 'lucide-react';
+﻿import { useState } from 'react'
+import { CheckCircle, XCircle, Clock, ChevronUp, ChevronDown, Search } from 'lucide-react'
+import { useApp } from '../../context/AppContext'
 
-const Sessions = () => {
-  const { appData } = useApp();
+function StatusBadge({ session }) {
+  if (session.score) return <span className="text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Completed</span>
+  const missed = session.attendance && session.attendance.some(a => a.status === 'absent')
+  if (missed) return <span className="text-xs text-red-500 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">Missed</span>
+  return <span className="text-xs text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Upcoming</span>
+}
 
-  const upcomingSessions = appData.sessions.filter(s => !s.score).slice(0, 5);
-  const completedSessions = appData.sessions.filter(s => s.score);
-  const missedSessions = appData.sessions.filter(s => 
-    s.attendance && s.attendance.some(a => a.status === 'absent')
-  );
+function ScoreBadge({ score }) {
+  if (!score) return <span className="text-xs text-gray-400">—</span>
+  const color = score >= 80 ? 'text-green-600' : score >= 60 ? 'text-blue-600' : 'text-red-500'
+  return <span className={`text-sm font-semibold ${color}`}>{score}%</span>
+}
+
+function SortIcon({ active, dir }) {
+  if (!active) return <ChevronUp size={12} className="text-gray-300" />
+  return dir === 'asc' ? <ChevronUp size={12} className="text-blue-500" /> : <ChevronDown size={12} className="text-blue-500" />
+}
+
+export default function Sessions() {
+  const { appData } = useApp()
+  const { sessions, mentors, students } = appData
+
+  const [search, setSearch] = useState('')
+  const [sortKey, setSortKey] = useState('date')
+  const [sortDir, setSortDir] = useState('desc')
+  const [filter, setFilter] = useState('all')
+
+  const upcoming = sessions.filter(s => !s.score && !(s.attendance && s.attendance.some(a => a.status === 'absent')))
+  const completed = sessions.filter(s => s.score)
+  const missed = sessions.filter(s => s.attendance && s.attendance.some(a => a.status === 'absent'))
+
+  const handleSort = (key) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('desc') }
+  }
+
+  const filtered = sessions
+    .filter(s => {
+      const mentor = mentors.find(m => m.id === s.mentorId)
+      const student = students.find(st => st.id === s.studentId)
+      const matchSearch = (s.topic || '').toLowerCase().includes(search.toLowerCase()) ||
+        (mentor?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        (student?.name || '').toLowerCase().includes(search.toLowerCase())
+      if (!matchSearch) return false
+      if (filter === 'upcoming') return !s.score && !(s.attendance && s.attendance.some(a => a.status === 'absent'))
+      if (filter === 'completed') return !!s.score
+      if (filter === 'missed') return s.attendance && s.attendance.some(a => a.status === 'absent')
+      return true
+    })
+    .sort((a, b) => {
+      const dir = sortDir === 'asc' ? 1 : -1
+      if (sortKey === 'score') return ((a.score || 0) - (b.score || 0)) * dir
+      if (sortKey === 'date') return ((a.date || '') > (b.date || '') ? 1 : -1) * dir
+      if (sortKey === 'topic') return ((a.topic || '') > (b.topic || '') ? 1 : -1) * dir
+      return 0
+    })
+
+  const filters = [
+    { key: 'all', label: 'All' },
+    { key: 'upcoming', label: 'Upcoming' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'missed', label: 'Missed' },
+  ]
+
+  const cols = [
+    { key: 'topic', label: 'Topic' },
+    { key: null, label: 'Mentor' },
+    { key: null, label: 'Student' },
+    { key: 'date', label: 'Date' },
+    { key: 'score', label: 'Score' },
+    { key: null, label: 'Status' },
+  ]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold text-gray-900">Session Tracking</h1>
-        <p className="text-gray-500 mt-1">Monitor teaching execution</p>
+    <div className="p-6 space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Session Tracking</h2>
+          <p className="text-sm text-gray-500">Monitor teaching execution across all mentors</p>
+        </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <div className="flex items-center gap-3 mb-2">
-            <Clock className="w-5 h-5 text-blue-600" />
-            <p className="text-gray-500 text-sm">Upcoming</p>
-          </div>
-          <p className="text-3xl font-bold text-gray-900">{upcomingSessions.length}</p>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-3 mb-2">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <p className="text-gray-500 text-sm">Completed</p>
-          </div>
-          <p className="text-3xl font-bold text-green-600">{completedSessions.length}</p>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-3 mb-2">
-            <XCircle className="w-5 h-5 text-red-600" />
-            <p className="text-gray-500 text-sm">Missed</p>
-          </div>
-          <p className="text-3xl font-bold text-red-600">{missedSessions.length}</p>
-        </Card>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center"><Clock size={16} className="text-blue-500" /></div>
+          <div><p className="text-xs text-gray-500">Upcoming</p><p className="text-xl font-semibold text-gray-900">{upcoming.length}</p></div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center"><CheckCircle size={16} className="text-green-500" /></div>
+          <div><p className="text-xs text-gray-500">Completed</p><p className="text-xl font-semibold text-green-600">{completed.length}</p></div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center"><XCircle size={16} className="text-red-500" /></div>
+          <div><p className="text-xs text-gray-500">Missed</p><p className="text-xl font-semibold text-red-500">{missed.length}</p></div>
+        </div>
       </div>
 
-      {/* Upcoming Sessions */}
-      <Card>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Upcoming Sessions</h2>
-        <div className="space-y-3">
-          {upcomingSessions.map((session) => {
-            const mentor = appData.mentors.find(m => m.id === session.mentorId);
-            const student = appData.students.find(s => s.id === session.studentId);
-
-            return (
-              <div key={session.id} className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                <div className="flex items-center gap-4">
-                  <Calendar className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <p className="font-semibold text-gray-900">{session.topic}</p>
-                    <p className="text-sm text-gray-600">
-                      {mentor?.name} → {student?.name}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">{session.date}</span>
-                  <Button variant="secondary" className="text-sm">
-                    Reschedule
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit">
+          {filters.map(f => (
+            <button key={f.key} onClick={() => setFilter(f.key)}
+              className={`px-4 py-1.5 text-sm rounded-md transition-colors ${filter === f.key ? 'bg-white text-gray-900 shadow-sm font-medium' : 'text-gray-500 hover:text-gray-700'}`}>
+              {f.label}
+            </button>
+          ))}
         </div>
-      </Card>
-
-      {/* Completed Sessions */}
-      <Card>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Completed Sessions</h2>
-        <div className="space-y-3">
-          {completedSessions.slice(0, 10).map((session) => {
-            const mentor = appData.mentors.find(m => m.id === session.mentorId);
-            const student = appData.students.find(s => s.id === session.studentId);
-
-            return (
-              <div key={session.id} className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
-                <div className="flex items-center gap-4">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <div>
-                    <p className="font-semibold text-gray-900">{session.topic}</p>
-                    <p className="text-sm text-gray-600">
-                      {mentor?.name} → {student?.name}
-                    </p>
-                    {session.notes && (
-                      <p className="text-xs text-gray-500 mt-1">{session.notes}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">Score</p>
-                    <p className="text-lg font-bold text-green-600">{session.score}/5</p>
-                  </div>
-                  <span className="text-sm text-gray-600">{session.date}</span>
-                </div>
-              </div>
-            );
-          })}
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input type="text" placeholder="Search sessions..." value={search} onChange={e => setSearch(e.target.value)}
+            className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-56" />
         </div>
-      </Card>
+      </div>
 
-      {/* Missed Sessions */}
-      {missedSessions.length > 0 && (
-        <Card className="border-2 border-red-200">
-          <h2 className="text-xl font-semibold text-red-900 mb-4">Missed Sessions</h2>
-          <div className="space-y-3">
-            {missedSessions.map((session) => {
-              const mentor = appData.mentors.find(m => m.id === session.mentorId);
-              const student = appData.students.find(s => s.id === session.studentId);
-
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50">
+              {cols.map(col => (
+                <th key={col.label} onClick={() => col.key && handleSort(col.key)}
+                  className={`text-left px-4 py-3 text-xs font-medium text-gray-500 ${col.key ? 'cursor-pointer hover:text-gray-700 select-none' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    {col.label}
+                    {col.key && <SortIcon active={sortKey === col.key} dir={sortDir} />}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {filtered.map(session => {
+              const mentor = mentors.find(m => m.id === session.mentorId)
+              const student = students.find(s => s.id === session.studentId)
               return (
-                <div key={session.id} className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-xl">
-                  <div className="flex items-center gap-4">
-                    <XCircle className="w-5 h-5 text-red-600" />
-                    <div>
-                      <p className="font-semibold text-gray-900">{session.topic}</p>
-                      <p className="text-sm text-gray-600">
-                        {mentor?.name} → {student?.name}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-600">{session.date}</span>
-                    <Button variant="danger" className="text-sm">
-                      Reschedule
-                    </Button>
-                  </div>
-                </div>
-              );
+                <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-gray-900">{session.topic}</p>
+                    {session.notes && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[180px]">{session.notes}</p>}
+                  </td>
+                  <td className="px-4 py-3 text-gray-700">{mentor?.name || '—'}</td>
+                  <td className="px-4 py-3 text-gray-700">{student?.name || '—'}</td>
+                  <td className="px-4 py-3 text-gray-500">{session.date || '—'}</td>
+                  <td className="px-4 py-3"><ScoreBadge score={session.score} /></td>
+                  <td className="px-4 py-3"><StatusBadge session={session} /></td>
+                </tr>
+              )
             })}
-          </div>
-        </Card>
-      )}
+            {filtered.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">No sessions found.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
-  );
-};
-
-export default Sessions;
+  )
+}

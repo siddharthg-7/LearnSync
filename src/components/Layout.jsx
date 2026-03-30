@@ -42,10 +42,11 @@ const Layout = ({ children }) => {
     ],
     admin: [
       { name: 'Dashboard', icon: Home, path: '/admin' },
-      { name: 'Modules', icon: BookOpen, path: '/admin/modules' },
+      { name: 'Courses', icon: BookOpen, path: '/admin/modules' },
       { name: 'Sessions', icon: Calendar, path: '/admin/sessions' },
-      { name: 'AI Insights', icon: BarChart3, path: '/admin/insights' },
-      { name: 'Feedback', icon: HelpCircle, path: '/admin/feedback' }
+      { name: 'Students', icon: Users, path: '/admin/students' },
+      { name: 'Mentors', icon: GraduationCap, path: '/admin/mentors' },
+      { name: 'Notifications', icon: Bell, path: '/admin/notifications' }
     ]
   };
 

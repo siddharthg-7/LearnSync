@@ -18,8 +18,9 @@ import MentorSessions from './pages/mentor/MentorSessions';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Modules from './pages/admin/Modules';
 import Sessions from './pages/admin/Sessions';
-import AIInsights from './pages/admin/AIInsights';
-import Feedback from './pages/admin/Feedback';
+import AdminStudents from './pages/admin/AdminStudents';
+import AdminMentors from './pages/admin/AdminMentors';
+import AdminNotifications from './pages/admin/AdminNotifications';
 
 const AppRoutes = () => {
   const { currentRole, currentUser, updateCurrentUser, switchRole } = useApp();
@@ -91,8 +92,9 @@ const AppRoutes = () => {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/modules" element={<Modules />} />
             <Route path="/admin/sessions" element={<Sessions />} />
-            <Route path="/admin/insights" element={<AIInsights />} />
-            <Route path="/admin/feedback" element={<Feedback />} />
+            <Route path="/admin/students" element={<AdminStudents />} />
+            <Route path="/admin/mentors" element={<AdminMentors />} />
+            <Route path="/admin/notifications" element={<AdminNotifications />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </>
         )}
