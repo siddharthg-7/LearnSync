@@ -12,6 +12,7 @@ const ContentCreation = () => {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [successMsg, setSuccessMsg] = useState('');
 
   const [courseForm, setCourseForm] = useState({
     name: '',
@@ -43,7 +44,8 @@ const ContentCreation = () => {
       };
       addCourse(newCourse);
       setCourseForm({ name: '', subject: '', level: 'beginner' });
-      setStep('select');
+      setSuccessMsg('Course created successfully!');
+      setTimeout(() => { setSuccessMsg(''); setStep('select'); }, 1500);
     }
   };
 
@@ -56,7 +58,8 @@ const ContentCreation = () => {
       };
       addChapter(newChapter);
       setChapterForm({ name: '', order: 1 });
-      setStep('select');
+      setSuccessMsg('Chapter added successfully!');
+      setTimeout(() => { setSuccessMsg(''); setStep('select'); }, 1500);
     }
   };
 
@@ -149,7 +152,8 @@ Generate a JSON response with:
       addTopic(newTopic);
       setTopicForm({ name: '', content: '', difficulty: 'basic', xpReward: 50 });
       setPreview(null);
-      setStep('select');
+      setSuccessMsg('Topic published successfully!');
+      setTimeout(() => { setSuccessMsg(''); setStep('select'); }, 1500);
     }
   };
 
@@ -160,9 +164,17 @@ Generate a JSON response with:
         <p className="text-gray-500 mt-1">Create courses, chapters, and topics for students</p>
       </div>
 
+      {/* Success Message */}
+      {successMsg && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 font-medium text-sm flex items-center gap-2">
+          <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+          {successMsg}
+        </div>
+      )}
+
       {/* Action Buttons */}
       {step === 'select' && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setStep('course')}>
             <div className="text-center p-6">
               <Plus className="w-12 h-12 text-blue-600 mx-auto mb-3" />
@@ -253,11 +265,11 @@ Generate a JSON response with:
               <label className="block text-gray-700 mb-2">Select Course</label>
               <select
                 value={selectedCourse?.id || ''}
-                onChange={(e) => setSelectedCourse(mentorCourses.find(c => c.id === parseInt(e.target.value)))}
+                onChange={(e) => setSelectedCourse(mentorCourses.find(c => c.id === e.target.value) || allCourses.find(c => c.id === e.target.value))}
                 className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Choose a course</option>
-                {mentorCourses.map(course => (
+                {[...mentorCourses, ...appData.courses.filter(c => !mentorCourses.find(mc => mc.id === c.id))].map(course => (
                   <option key={course.id} value={course.id}>{course.name}</option>
                 ))}
               </select>
@@ -308,22 +320,28 @@ Generate a JSON response with:
                 <select
                   value={selectedChapter?.id || ''}
                   onChange={(e) => {
-                    const chapter = appData.chapters.find(ch => ch.id === parseInt(e.target.value));
+                    const chapter = appData.chapters.find(ch => ch.id === e.target.value);
                     setSelectedChapter(chapter);
-                    const course = appData.courses.find(c => c.chapters.includes(chapter?.id));
-                    setSelectedCourse(course);
+                    if (chapter) {
+                      const course = appData.courses.find(c => (c.chapters || []).includes(chapter.id));
+                      setSelectedCourse(course);
+                    }
                   }}
                   className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">Choose a chapter</option>
-                  {appData.chapters
-                    .filter(ch => {
-                      const course = appData.courses.find(c => c.chapters.includes(ch.id));
-                      return course?.createdBy === mentor.id;
+                  {appData.chapters.length > 0 ? (
+                    appData.chapters.map(chapter => {
+                      const course = appData.courses.find(c => (c.chapters || []).includes(chapter.id));
+                      return (
+                        <option key={chapter.id} value={chapter.id}>
+                          {chapter.name} {course ? `(${course.name})` : ''}
+                        </option>
+                      );
                     })
-                    .map(chapter => (
-                      <option key={chapter.id} value={chapter.id}>{chapter.name}</option>
-                    ))}
+                  ) : (
+                    <option disabled>No chapters yet — create a chapter first</option>
+                  )}
                 </select>
               </div>
 

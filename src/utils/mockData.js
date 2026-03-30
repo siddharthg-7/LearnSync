@@ -17,7 +17,7 @@ export const initializeMockData = () => {
       level_number: 5,
       streak: 7,
       attendance: 85,
-      completedTopics: ['addition', 'grammar'],
+      completedTopics: [1, 2, 4, 5, 10, 11, 19, 20, 23, 24, 27],
       onboarded: true
     },
     {
@@ -36,7 +36,7 @@ export const initializeMockData = () => {
       level_number: 3,
       streak: 3,
       attendance: 70,
-      completedTopics: ['counting'],
+      completedTopics: [1, 2, 3, 8, 10],
       onboarded: true
     },
     {
@@ -55,7 +55,7 @@ export const initializeMockData = () => {
       level_number: 9,
       streak: 12,
       attendance: 92,
-      completedTopics: ['algebra', 'essay writing', 'trigonometry'],
+      completedTopics: [1, 2, 3, 4, 5, 6, 7, 10, 11, 19, 20, 21, 33, 34, 35, 37, 38, 45, 46, 47],
       onboarded: true
     }
   ];

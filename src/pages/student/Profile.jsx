@@ -30,30 +30,30 @@ const Profile = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">My Profile</h1>
-        <p className="text-gray-500 mt-1">Track your learning journey</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">My Profile</h1>
+        <p className="text-gray-500 mt-1 text-sm sm:text-base">Track your learning journey</p>
       </div>
 
       {/* Personal Info Card */}
       <Card>
-        <div className="flex items-start gap-6">
-          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
-            <User className="w-12 h-12 text-blue-600" />
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+            <User className="w-10 h-10 sm:w-12 sm:h-12 text-blue-600" />
           </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900">{student.name}</h2>
-            <p className="text-gray-600 mt-1">Class {student.class} • Age {student.age}</p>
-            <p className="text-gray-600">Learning Mode: <span className="font-semibold capitalize">{student.level}</span></p>
+          <div className="flex-1 text-center sm:text-left">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{student.name}</h2>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">Class {student.class} - Age {student.age}</p>
+            <p className="text-gray-600 text-sm sm:text-base">Learning Mode: <span className="font-semibold capitalize">{student.level}</span></p>
             {mentor && (
-              <p className="text-gray-600 mt-2">Mentor: <span className="font-semibold">{mentor.name}</span></p>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">Mentor: <span className="font-semibold">{mentor.name}</span></p>
             )}
           </div>
-          <div className="text-right">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="text-center sm:text-right">
+            <div className="flex items-center gap-2 mb-2 justify-center sm:justify-end">
               <Award className="w-5 h-5 text-yellow-600" />
-              <span className="text-2xl font-bold text-gray-900">Level {student.level_number}</span>
+              <span className="text-xl sm:text-2xl font-bold text-gray-900">Level {student.level_number}</span>
             </div>
             <p className="text-gray-600 text-sm">{student.xp} XP</p>
           </div>
@@ -61,37 +61,37 @@ const Profile = () => {
       </Card>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <div className="flex items-center gap-3 mb-2">
-            <Zap className="w-5 h-5 text-blue-600" />
-            <p className="text-gray-500 text-sm">Total XP</p>
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+            <p className="text-gray-500 text-xs sm:text-sm">Total XP</p>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{student.xp}</p>
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.xp}</p>
         </Card>
 
         <Card>
-          <div className="flex items-center gap-3 mb-2">
-            <Target className="w-5 h-5 text-green-600" />
-            <p className="text-gray-500 text-sm">Progress</p>
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <Target className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+            <p className="text-gray-500 text-xs sm:text-sm">Progress</p>
           </div>
-          <p className="text-3xl font-bold text-green-600">{student.progress}%</p>
+          <p className="text-xl sm:text-3xl font-bold text-green-600">{student.progress}%</p>
         </Card>
 
         <Card>
-          <div className="flex items-center gap-3 mb-2">
-            <Calendar className="w-5 h-5 text-orange-600" />
-            <p className="text-gray-500 text-sm">Streak</p>
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+            <p className="text-gray-500 text-xs sm:text-sm">Streak</p>
           </div>
-          <p className="text-3xl font-bold text-orange-600">{student.streak} days</p>
+          <p className="text-xl sm:text-3xl font-bold text-orange-600">{student.streak}d</p>
         </Card>
 
         <Card>
-          <div className="flex items-center gap-3 mb-2">
-            <BookOpen className="w-5 h-5 text-purple-600" />
-            <p className="text-gray-500 text-sm">Completed</p>
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+            <p className="text-gray-500 text-xs sm:text-sm">Completed</p>
           </div>
-          <p className="text-3xl font-bold text-purple-600">{completedCount}/{totalTopics}</p>
+          <p className="text-xl sm:text-3xl font-bold text-purple-600">{completedCount}/{totalTopics}</p>
         </Card>
       </div>
 
@@ -115,7 +115,7 @@ const Profile = () => {
       </Card>
 
       {/* Subjects & Topics */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Subjects */}
         <Card>
           <h3 className="font-semibold text-gray-900 mb-3">My Subjects</h3>
@@ -168,7 +168,7 @@ const Profile = () => {
           <Target className="w-5 h-5 text-red-600" />
           Areas for Improvement
         </h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {Object.entries(student.weakTopics).map(([subject, topics]) => (
             topics.map((topic) => (
               <div key={`${subject}-${topic}`} className="p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -186,7 +186,7 @@ const Profile = () => {
           <Award className="w-5 h-5 text-green-600" />
           Strengths
         </h3>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {Object.entries(student.strongTopics).map(([subject, topics]) => (
             topics.map((topic) => (
               <div key={`${subject}-${topic}`} className="p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -208,12 +208,12 @@ const Profile = () => {
                 <p className="font-medium text-gray-900">{quiz.topic}</p>
                 <p className="text-sm text-gray-500">{quiz.date}</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <ProgressBar 
                   progress={(quiz.score / quiz.total) * 100} 
-                  className="w-32"
+                  className="w-20 sm:w-32"
                 />
-                <span className={`font-semibold ${
+                <span className={`font-semibold text-sm sm:text-base ${
                   quiz.score / quiz.total >= 0.8 ? 'text-green-600' :
                   quiz.score / quiz.total >= 0.6 ? 'text-yellow-600' :
                   'text-red-600'

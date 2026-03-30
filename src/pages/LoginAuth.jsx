@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
+import { BookOpen, Mail, Lock, UserPlus, LogIn, GraduationCap, Rocket, Target, Users, ArrowRight } from 'lucide-react';
 import { signIn, signUp, signInWithGoogle } from '../services/auth';
 import Button from '../components/Button';
 
@@ -94,68 +94,107 @@ const LoginAuth = ({ onLogin }) => {
 
   const mockUsers = [
     {
-      name: 'Priya',
+      id: 'student_1',
+      name: 'Priya Sharma',
       age: 9,
       class: '4th',
       level: 'foundation',
-      emoji: '🎨',
-      color: 'from-pink-400 to-purple-400',
-      email: 'priya@demo.com',
-      password: 'demo123',
-      role: 'student'
+      iconType: 'foundation',
+      borderColor: 'border-l-blue-500',
+      bgColor: 'bg-blue-50',
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      role: 'student',
+      subjects: ['Math', 'English'],
+      mentorId: 2,
+      progress: 45,
+      xp: 280,
+      level_number: 3,
+      streak: 5,
+      attendance: 70,
+      onboarded: true,
+      weakTopics: { Math: ['subtraction'], English: ['reading'] },
+      strongTopics: { Math: ['counting'] },
+      completedTopics: [1, 2, 3, 8, 10]
     },
     {
-      name: 'Aarav',
+      id: 'student_2',
+      name: 'Aarav Kumar',
       age: 12,
       class: '7th',
       level: 'growth',
-      emoji: '🚀',
-      color: 'from-blue-400 to-cyan-400',
-      email: 'aarav@demo.com',
-      password: 'demo123',
-      role: 'student'
+      iconType: 'growth',
+      borderColor: 'border-l-emerald-500',
+      bgColor: 'bg-emerald-50',
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-600',
+      role: 'student',
+      subjects: ['Math', 'Science', 'English'],
+      mentorId: 1,
+      progress: 65,
+      xp: 450,
+      level_number: 5,
+      streak: 12,
+      attendance: 85,
+      onboarded: true,
+      weakTopics: { Math: ['fractions', 'decimals'], Science: ['photosynthesis'] },
+      strongTopics: { Math: ['addition'], English: ['grammar'] },
+      completedTopics: [1, 2, 4, 5, 10, 11, 19, 20, 23, 24, 27]
     },
     {
-      name: 'Rohan',
+      id: 'student_3',
+      name: 'Rohan Patel',
       age: 16,
       class: '11th',
       level: 'mastery',
-      emoji: '🎯',
-      color: 'from-gray-700 to-gray-900',
-      email: 'rohan@demo.com',
-      password: 'demo123',
-      role: 'student'
+      iconType: 'mastery',
+      borderColor: 'border-l-gray-800',
+      bgColor: 'bg-gray-50',
+      iconBg: 'bg-gray-200',
+      iconColor: 'text-gray-700',
+      role: 'student',
+      subjects: ['Math', 'Science', 'English', 'Computer Science'],
+      mentorId: 1,
+      progress: 78,
+      xp: 890,
+      level_number: 9,
+      streak: 12,
+      attendance: 92,
+      onboarded: true,
+      weakTopics: { Math: ['calculus'], Science: ['organic chemistry'] },
+      strongTopics: { Math: ['algebra'], English: ['essay writing'] },
+      completedTopics: [1, 2, 3, 4, 5, 6, 7, 10, 11, 19, 20, 21, 33, 34, 35, 37, 38, 45, 46, 47]
     },
     {
-      name: 'Dr. Anjali',
+      id: 'mentor_1',
+      name: 'Dr. Anjali Verma',
       role: 'mentor',
-      emoji: '👩‍🏫',
-      color: 'from-green-400 to-emerald-500',
-      email: 'anjali@demo.com',
-      password: 'demo123',
-      subjects: ['Math', 'Science']
+      iconType: 'mentor',
+      borderColor: 'border-l-amber-500',
+      bgColor: 'bg-amber-50',
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600',
+      subjects: ['Math', 'Science'],
+      education: 'M.Sc Mathematics',
+      skillLevel: 'advanced',
+      experience: 5,
+      teachingExperience: true,
+      ratings: { Math: 5, Science: 4 },
+      assignedStudents: ['student_2', 'student_3'],
+      sessionsCompleted: 45,
+      avgImprovement: 25,
+      onboarded: true
     }
   ];
 
-  const handleMockLogin = async (user) => {
+  const handleMockLogin = (user) => {
     setError('');
     setLoading(true);
     
     try {
-      // Bypass Firebase auth entirely for demo accounts
-      const mockUserData = {
-        id: `demo-${user.name.toLowerCase().replace(/[^a-z]/g, '')}`,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        onboarded: user.role === 'student' ? true : (user.role === 'mentor' ? true : true),
-        ...(user.age && { age: user.age }),
-        ...(user.class && { class: user.class }),
-        ...(user.level && { level: user.level }),
-        ...(user.subjects && { subjects: user.subjects }),
-      };
-      
-      onLogin(mockUserData, user.role);
+      // Direct login without authentication - use mock data
+      // Pass all mock users so they can be added to appData
+      onLogin(user, user.role, mockUsers);
     } catch {
       setError('Demo login failed. Please try again.');
     } finally {
@@ -173,42 +212,54 @@ const LoginAuth = ({ onLogin }) => {
             <p className="text-sm text-gray-600">Click any card to login instantly</p>
           </div>
           
-          <div className="space-y-4">
-            {mockUsers.map((user, index) => (
-              <button
-                key={index}
-                onClick={() => handleMockLogin(user)}
-                disabled={loading}
-                className={`w-full p-4 rounded-xl bg-gradient-to-r ${user.color} text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-left ${
-                  loading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="text-4xl">{user.emoji}</div>
-                  <div className="flex-1">
-                    <div className="font-bold text-lg">{user.name}</div>
-                    {user.role === 'student' ? (
-                      <>
-                        <div className="text-sm opacity-90">
-                          {user.age} years • Class {user.class}
-                        </div>
-                        <div className="text-xs opacity-75 capitalize mt-1">
-                          {user.level} Mode
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-sm opacity-90">Mentor</div>
-                        <div className="text-xs opacity-75 mt-1">
-                          {user.subjects.join(', ')}
-                        </div>
-                      </>
-                    )}
+          <div className="space-y-3">
+            {mockUsers.map((user, index) => {
+              const IconMap = {
+                foundation: GraduationCap,
+                growth: Rocket,
+                mastery: Target,
+                mentor: Users
+              };
+              const UserIcon = IconMap[user.iconType] || GraduationCap;
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleMockLogin(user)}
+                  disabled={loading}
+                  className={`w-full p-4 rounded-xl bg-white border-2 border-gray-100 border-l-4 ${user.borderColor} hover:shadow-md hover:border-gray-200 transition-all duration-200 text-left ${
+                    loading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 ${user.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                      <UserIcon className={`w-5 h-5 ${user.iconColor}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-gray-900 text-sm sm:text-base">{user.name}</div>
+                      {user.role === 'student' ? (
+                        <>
+                          <div className="text-xs text-gray-500">
+                            {user.age} years • Class {user.class}
+                          </div>
+                          <div className="text-xs text-gray-400 capitalize mt-0.5">
+                            {user.level} Mode
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-xs text-gray-500">Mentor</div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {user.subjects.join(', ')}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-gray-400" />
                   </div>
-                  <div className="text-2xl opacity-75">→</div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
           
           <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">

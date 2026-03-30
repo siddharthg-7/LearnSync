@@ -5,28 +5,32 @@ import { Users, BookOpen, Calendar, TrendingUp, AlertTriangle } from 'lucide-rea
 const AdminDashboard = () => {
   const { appData } = useApp();
 
+  // Filter out demo users (those with IDs like 'student_1', 'mentor_1', etc.)
+  const realStudents = appData.students.filter(s => !s.id.match(/^student_\d+$/))
+  const realMentors = appData.mentors.filter(m => !m.id.match(/^mentor_\d+$/))
+
   // Calculate stats from real data
-  const totalStudents = appData.students.length;
-  const activeMentors = appData.mentors.filter(m => m.onboarded).length;
+  const totalStudents = realStudents.length;
+  const activeMentors = realMentors.filter(m => m.onboarded).length;
   const totalSessions = appData.sessions.length;
   
   // Calculate average progress
   const avgProgress = totalStudents > 0 
-    ? Math.round(appData.students.reduce((sum, s) => sum + (s.progress || 0), 0) / totalStudents)
+    ? Math.round(realStudents.reduce((sum, s) => sum + (s.progress || 0), 0) / totalStudents)
     : 0;
   
   // Calculate attendance rate
   const avgAttendance = totalStudents > 0
-    ? Math.round(appData.students.reduce((sum, s) => sum + (s.attendance || 0), 0) / totalStudents)
+    ? Math.round(realStudents.reduce((sum, s) => sum + (s.attendance || 0), 0) / totalStudents)
     : 0;
 
   // High-risk students (progress < 50 or attendance < 70)
-  const highRiskStudents = appData.students.filter(s => 
+  const highRiskStudents = realStudents.filter(s => 
     (s.progress || 0) < 50 || (s.attendance || 0) < 70
   ).length;
 
   // Low-performing mentors (avgImprovement < 15)
-  const lowPerformingMentors = appData.mentors.filter(m => 
+  const lowPerformingMentors = realMentors.filter(m => 
     (m.avgImprovement || 0) < 15
   ).length;
 

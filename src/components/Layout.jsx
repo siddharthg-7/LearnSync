@@ -140,7 +140,7 @@ const Layout = ({ children, onLogout }) => {
           </button>
 
           <div className="flex items-center gap-2 md:gap-4">
-            <div className="flex items-center gap-2">
+            <Link to={currentRole === 'student' ? '/profile' : '#'} className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
               <div className="w-7 h-7 md:w-8 md:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
                 {currentUser?.name?.[0] || 'U'}
               </div>
@@ -152,7 +152,7 @@ const Layout = ({ children, onLogout }) => {
                   {currentRole}
                 </span>
               </div>
-            </div>
+            </Link>
 
             <button
               onClick={handleLogout}

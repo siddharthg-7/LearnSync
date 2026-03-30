@@ -370,25 +370,36 @@ Make tasks specific and actionable. Distribute subjects evenly across days. Each
       )}
 
       {/* Today's Progress Bar */}
-      <Card className="bg-gradient-to-r from-indigo-500 to-blue-600 text-white border-0">
+      <Card className="border-2 border-gray-200">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-lg font-bold">Today's Progress</h2>
-            <p className="text-blue-100 text-sm">{completedToday} of {totalToday} tasks completed</p>
+            <h2 className="text-lg font-bold text-gray-900">Today's Progress</h2>
+            <p className="text-gray-500 text-sm">{completedToday} of {totalToday} tasks completed</p>
           </div>
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <span className="text-xl font-bold">{progressPercent}%</span>
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-gray-100 flex items-center justify-center relative">
+            <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="4" />
+              <circle cx="32" cy="32" r="28" fill="none" stroke="#3b82f6" strokeWidth="4"
+                strokeDasharray={`${2 * Math.PI * 28}`}
+                strokeDashoffset={`${2 * Math.PI * 28 * (1 - progressPercent / 100)}`}
+                strokeLinecap="round"
+                className="transition-all duration-500"
+              />
+            </svg>
+            <span className="text-sm font-bold text-gray-900">{progressPercent}%</span>
           </div>
         </div>
-        <div className="w-full bg-white/20 rounded-full h-3 backdrop-blur-sm">
-          <div
-            className="bg-white h-3 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${progressPercent}%` }}
-          />
+        <div className="w-full bg-gray-100 rounded-full h-2.5">
+          {progressPercent > 0 && (
+            <div
+              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          )}
         </div>
         {progressPercent === 100 && (
-          <div className="mt-3 py-2 bg-white/20 rounded-xl text-center backdrop-blur-sm">
-            <p className="font-semibold">🎉 Amazing! All tasks completed for today!</p>
+          <div className="mt-3 py-2 bg-green-50 border border-green-200 rounded-xl text-center">
+            <p className="font-semibold text-green-700 text-sm">All tasks completed for today!</p>
           </div>
         )}
       </Card>
@@ -518,27 +529,27 @@ Make tasks specific and actionable. Distribute subjects evenly across days. Each
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="text-center">
-          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <Target className="w-6 h-6 text-blue-600" />
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <Card className="text-center p-3 sm:p-5">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
+            <Target className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-900">{completedToday}</p>
-          <p className="text-sm text-gray-500">Tasks Done Today</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900">{completedToday}</p>
+          <p className="text-xs sm:text-sm text-gray-500">Done Today</p>
         </Card>
-        <Card className="text-center">
-          <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <Zap className="w-6 h-6 text-purple-600" />
+        <Card className="text-center p-3 sm:p-5">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
+            <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-900">{student?.streak || 0}</p>
-          <p className="text-sm text-gray-500">Day Streak</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900">{student?.streak || 0}</p>
+          <p className="text-xs sm:text-sm text-gray-500">Day Streak</p>
         </Card>
-        <Card className="text-center">
-          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-            <BookOpen className="w-6 h-6 text-green-600" />
+        <Card className="text-center p-3 sm:p-5">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
+            <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-900">{upcomingSchedule.reduce((acc, day) => acc + day.tasks.length, 0)}</p>
-          <p className="text-sm text-gray-500">Upcoming Tasks</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900">{upcomingSchedule.reduce((acc, day) => acc + day.tasks.length, 0)}</p>
+          <p className="text-xs sm:text-sm text-gray-500">Upcoming</p>
         </Card>
       </div>
     </div>

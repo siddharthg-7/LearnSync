@@ -1,8 +1,9 @@
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import Card from '../../components/Card';
 import ProgressBar from '../../components/ProgressBar';
 import Button from '../../components/Button';
-import { BookOpen, TrendingUp, Zap, Star, Flame, Trophy, Award } from 'lucide-react';
+import { BookOpen, TrendingUp, Zap, Star, Flame, Trophy, Award, Target } from 'lucide-react';
 
 // Foundation Mode (5-10 years) - Big, colorful, fun, super gamified
 const FoundationDashboard = ({ student, studyPlan, courses }) => {
@@ -89,48 +90,50 @@ const FoundationDashboard = ({ student, studyPlan, courses }) => {
       )}
 
       {/* My Courses - Big Colorful Cards */}
-      <div>
-        <div className="flex items-center gap-3 mb-4 md:mb-6">
-          <div className="text-4xl md:text-5xl">📚</div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">My Learning</h2>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:gap-6">
-          {courses.slice(0, 3).map((course, index) => (
-            <div key={course.id} className={`rounded-3xl p-5 md:p-6 shadow-xl border-4 transform hover:scale-102 transition-transform ${
-              index === 0 ? 'bg-gradient-to-br from-pink-100 to-purple-100 border-pink-300' :
-              index === 1 ? 'bg-gradient-to-br from-blue-100 to-cyan-100 border-blue-300' :
-              'bg-gradient-to-br from-green-100 to-yellow-100 border-green-300'
-            }`}>
-              <div className="flex items-center gap-3 md:gap-4 mb-4">
-                <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl md:text-4xl ${
-                  index === 0 ? 'bg-pink-300' :
-                  index === 1 ? 'bg-blue-300' :
-                  'bg-green-300'
-                }`}>
-                  {index === 0 ? '🎨' : index === 1 ? '🔢' : '🌍'}
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold text-gray-900">{course.name}</h3>
-              </div>
-              <div className="mb-4">
-                <div className="w-full bg-white rounded-full h-5 md:h-6 border-2 border-gray-300">
-                  <div className={`h-full rounded-full ${
-                    index === 0 ? 'bg-gradient-to-r from-pink-400 to-purple-400' :
-                    index === 1 ? 'bg-gradient-to-r from-blue-400 to-cyan-400' :
-                    'bg-gradient-to-r from-green-400 to-yellow-400'
-                  }`} style={{ width: '60%' }}></div>
-                </div>
-              </div>
-              <button className={`w-full text-base md:text-lg font-bold py-3 md:py-4 rounded-xl transition-all transform hover:scale-105 ${
-                index === 0 ? 'bg-pink-400 hover:bg-pink-500 text-white' :
-                index === 1 ? 'bg-blue-400 hover:bg-blue-500 text-white' :
-                'bg-green-400 hover:bg-green-500 text-white'
+      {courses && courses.length > 0 && (
+        <div>
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="text-4xl md:text-5xl">📚</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">My Learning</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:gap-6">
+            {courses.slice(0, 3).map((course, index) => (
+              <div key={course.id} className={`rounded-3xl p-5 md:p-6 shadow-xl border-4 transform hover:scale-102 transition-transform ${
+                index === 0 ? 'bg-gradient-to-br from-pink-100 to-purple-100 border-pink-300' :
+                index === 1 ? 'bg-gradient-to-br from-blue-100 to-cyan-100 border-blue-300' :
+                'bg-gradient-to-br from-green-100 to-yellow-100 border-green-300'
               }`}>
-                Continue Learning 🎯
-              </button>
-            </div>
-          ))}
+                <div className="flex items-center gap-3 md:gap-4 mb-4">
+                  <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl md:text-4xl ${
+                    index === 0 ? 'bg-pink-300' :
+                    index === 1 ? 'bg-blue-300' :
+                    'bg-green-300'
+                  }`}>
+                    {index === 0 ? '🎨' : index === 1 ? '🔢' : '🌍'}
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold text-gray-900">{course.name}</h3>
+                </div>
+                <div className="mb-4">
+                  <div className="w-full bg-white rounded-full h-5 md:h-6 border-2 border-gray-300">
+                    <div className={`h-full rounded-full ${
+                      index === 0 ? 'bg-gradient-to-r from-pink-400 to-purple-400' :
+                      index === 1 ? 'bg-gradient-to-r from-blue-400 to-cyan-400' :
+                      'bg-gradient-to-r from-green-400 to-yellow-400'
+                    }`} style={{ width: '60%' }}></div>
+                  </div>
+                </div>
+                <button className={`w-full text-base md:text-lg font-bold py-3 md:py-4 rounded-xl transition-all transform hover:scale-105 ${
+                  index === 0 ? 'bg-pink-400 hover:bg-pink-500 text-white' :
+                  index === 1 ? 'bg-blue-400 hover:bg-blue-500 text-white' :
+                  'bg-green-400 hover:bg-green-500 text-white'
+                }`}>
+                  Continue Learning 🎯
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Achievements Section */}
       <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-3xl p-4 md:p-6 border-4 border-yellow-300">
@@ -163,53 +166,53 @@ const FoundationDashboard = ({ student, studyPlan, courses }) => {
 // Growth Mode (11-14 years) - Gamified with XP and badges
 const GrowthDashboard = ({ student, studyPlan, courses }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Welcome with Level */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900">
-            Welcome back, {student.name}! 🚀
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+            Welcome back, {student.name}!
           </h1>
-          <p className="text-lg text-blue-600 mt-1">Growth Mode • Level {student.level_number}</p>
+          <p className="text-sm sm:text-lg text-blue-600 mt-1">Growth Mode - Level {student.level_number}</p>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-500">Next Level</p>
-          <div className="w-48 bg-gray-200 rounded-full h-3 mt-1">
-            <div className="bg-blue-600 h-3 rounded-full" style={{ width: '70%' }}></div>
+        <div className="sm:text-right">
+          <p className="text-xs sm:text-sm text-gray-500">Next Level</p>
+          <div className="w-full sm:w-48 bg-gray-200 rounded-full h-2.5 sm:h-3 mt-1">
+            <div className="bg-blue-600 h-full rounded-full" style={{ width: '70%' }}></div>
           </div>
           <p className="text-xs text-gray-500 mt-1">{student.xp} / 1000 XP</p>
         </div>
       </div>
 
       {/* XP Stats Grid */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="text-center p-4">
-          <Zap className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-          <p className="text-3xl font-bold text-gray-900">{student.xp}</p>
-          <p className="text-sm text-gray-500">Total XP</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="text-center p-3 sm:p-4">
+          <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mx-auto mb-1 sm:mb-2" />
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.xp}</p>
+          <p className="text-xs sm:text-sm text-gray-500">Total XP</p>
         </Card>
 
-        <Card className="text-center p-4">
-          <Flame className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-          <p className="text-3xl font-bold text-gray-900">{student.streak}</p>
-          <p className="text-sm text-gray-500">Day Streak</p>
+        <Card className="text-center p-3 sm:p-4">
+          <Flame className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600 mx-auto mb-1 sm:mb-2" />
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.streak}</p>
+          <p className="text-xs sm:text-sm text-gray-500">Day Streak</p>
         </Card>
 
-        <Card className="text-center p-4">
-          <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
-          <p className="text-3xl font-bold text-gray-900">{student.progress}%</p>
-          <p className="text-sm text-gray-500">Progress</p>
+        <Card className="text-center p-3 sm:p-4">
+          <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 mx-auto mb-1 sm:mb-2" />
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.progress}%</p>
+          <p className="text-xs sm:text-sm text-gray-500">Progress</p>
         </Card>
 
-        <Card className="text-center p-4">
-          <Award className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-          <p className="text-3xl font-bold text-gray-900">{student.level_number}</p>
-          <p className="text-sm text-gray-500">Level</p>
+        <Card className="text-center p-3 sm:p-4">
+          <Award className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mx-auto mb-1 sm:mb-2" />
+          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.level_number}</p>
+          <p className="text-xs sm:text-sm text-gray-500">Level</p>
         </Card>
       </div>
 
       {/* Daily Quests */}
-      {studyPlan && (
+      {studyPlan && studyPlan.tasks && studyPlan.tasks.length > 0 && (
         <Card>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-gray-900">Daily Quests</h2>
@@ -249,37 +252,115 @@ const GrowthDashboard = ({ student, studyPlan, courses }) => {
       )}
 
       {/* Courses with Progress */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">My Courses</h2>
-        <div className="grid grid-cols-3 gap-4">
-          {courses.map((course) => (
-            <Card key={course.id}>
-              <div className="flex items-center gap-3 mb-3">
-                <BookOpen className="w-6 h-6 text-blue-600" />
-                <h3 className="font-bold text-gray-900">{course.name}</h3>
-              </div>
-              <ProgressBar progress={65} className="mb-3" />
-              <p className="text-sm text-gray-500 mb-3">{course.chapters.length} chapters</p>
-              <Button variant="secondary" className="w-full">Continue</Button>
-            </Card>
-          ))}
-        </div>
-      </div>
+      {courses && courses.length > 0 && (
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">My Courses</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {courses.map((course, index) => {
+              const courseGradients = [
+                'from-blue-600 to-indigo-700',
+                'from-emerald-600 to-teal-700',
+                'from-orange-500 to-red-600',
+                'from-violet-600 to-purple-700',
+                'from-pink-600 to-rose-700',
+              ];
+              const courseImages = [
+                'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&q=80',
+                'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=80',
+                'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=600&q=80',
+                'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80',
+                'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=600&q=80',
+              ];
+              const gradient = courseGradients[index % courseGradients.length];
+              const bgImage = courseImages[index % courseImages.length];
+              const totalChapters = course.chapters?.length || course.lessons?.length || 0;
+              const progress = Math.floor(Math.random() * 40) + 30;
 
-      {/* Weak Areas */}
-      <Card>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Focus Areas</h2>
-        <div className="grid grid-cols-2 gap-3">
-          {student.weakTopics && Object.entries(student.weakTopics).map(([subject, topics]) => (
-            topics.map((topic) => (
-              <div key={topic} className="p-3 bg-red-50 border border-red-200 rounded-xl">
-                <p className="font-semibold text-red-600 capitalize">{topic}</p>
-                <p className="text-sm text-red-500">{subject}</p>
-              </div>
-            ))
-          ))}
+              return (
+                <div key={course.id} className="rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-all group cursor-pointer">
+                  {/* Card image header */}
+                  <div
+                    className="relative h-32 sm:h-36 flex items-end p-4"
+                    style={{
+                      backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.2)), url(${bgImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center'
+                    }}
+                  >
+                    <div className="relative z-10 w-full">
+                      <h3 className="text-white font-bold text-base sm:text-lg truncate">{course.name}</h3>
+                      <p className="text-white/70 text-xs sm:text-sm mt-0.5">{course.subject || 'General'}</p>
+                    </div>
+                  </div>
+
+                  {/* Card body */}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs sm:text-sm text-gray-500 font-medium">Progress</span>
+                      <span className="text-xs sm:text-sm font-bold text-gray-900">{progress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+                      <div className={`bg-gradient-to-r ${gradient} h-2 rounded-full transition-all duration-500`} style={{ width: `${progress}%` }} />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                      <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{totalChapters} lessons</span>
+                      <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-yellow-500" />+{(index + 1) * 50} XP</span>
+                    </div>
+
+                    <button onClick={() => window.location.href = '/courses'} className="w-full py-2 sm:py-2.5 rounded-xl font-semibold text-sm text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
+                      Continue Learning
+                      <TrendingUp className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </Card>
+      )}
+
+      {/* Focus Areas - Professional Design */}
+      {student.weakTopics && Object.keys(student.weakTopics).length > 0 && (
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
+              <Target className="w-5 h-5 text-amber-500" />
+              Focus Areas
+            </h2>
+            <span className="text-xs sm:text-sm text-gray-500 font-medium">
+              {Object.values(student.weakTopics).flat().length} topics to improve
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {Object.entries(student.weakTopics).map(([subject, topics]) => (
+              topics.map((topic) => {
+                const subjectColors = {
+                  'Mathematics': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-600', icon: 'text-blue-500' },
+                  'Science': { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-600', icon: 'text-emerald-500' },
+                  'English': { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', badge: 'bg-violet-100 text-violet-600', icon: 'text-violet-500' },
+                };
+                const colors = subjectColors[subject] || { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-600', icon: 'text-amber-500' };
+
+                return (
+                  <div key={topic} className={`p-3 sm:p-4 ${colors.bg} border ${colors.border} rounded-xl flex items-center gap-3 group/focus hover:shadow-sm transition-all`}>
+                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg ${colors.badge} flex items-center justify-center flex-shrink-0`}>
+                      <Target className={`w-4 h-4 sm:w-5 sm:h-5 ${colors.icon}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-semibold ${colors.text} capitalize text-sm sm:text-base truncate`}>{topic}</p>
+                      <p className="text-xs text-gray-500">{subject}</p>
+                    </div>
+                    <button className={`px-2.5 py-1 sm:px-3 sm:py-1.5 ${colors.badge} rounded-lg text-xs font-semibold hover:opacity-80 transition-all flex-shrink-0`}>
+                      Practice
+                    </button>
+                  </div>
+                );
+              })
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
@@ -287,37 +368,37 @@ const GrowthDashboard = ({ student, studyPlan, courses }) => {
 // Mastery Mode (15-19 years) - Clean, minimal, analytics-focused
 const MasteryDashboard = ({ student, studyPlan, courses }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Minimal Header */}
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
           {student.name}
         </h1>
-        <p className="text-gray-500 mt-1">Mastery Mode 🎯 • Level {student.level_number}</p>
+        <p className="text-gray-500 mt-1 text-sm sm:text-base">Mastery Mode - Level {student.level_number}</p>
       </div>
 
       {/* Clean Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <p className="text-sm text-gray-500 mb-1">XP</p>
-          <p className="text-2xl font-semibold text-gray-900">{student.xp}</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">XP</p>
+          <p className="text-xl sm:text-2xl font-semibold text-gray-900">{student.xp}</p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500 mb-1">Streak</p>
-          <p className="text-2xl font-semibold text-gray-900">{student.streak} days</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Streak</p>
+          <p className="text-xl sm:text-2xl font-semibold text-gray-900">{student.streak} days</p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500 mb-1">Progress</p>
-          <p className="text-2xl font-semibold text-gray-900">{student.progress}%</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Progress</p>
+          <p className="text-xl sm:text-2xl font-semibold text-gray-900">{student.progress}%</p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500 mb-1">Attendance</p>
-          <p className="text-2xl font-semibold text-gray-900">{student.attendance}%</p>
+          <p className="text-xs sm:text-sm text-gray-500 mb-1">Attendance</p>
+          <p className="text-xl sm:text-2xl font-semibold text-gray-900">{student.attendance}%</p>
         </Card>
       </div>
 
       {/* Study Plan */}
-      {studyPlan && (
+      {studyPlan && studyPlan.tasks && studyPlan.tasks.length > 0 && (
         <Card>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Today's Schedule</h2>
           <div className="space-y-2">
@@ -341,39 +422,47 @@ const MasteryDashboard = ({ student, studyPlan, courses }) => {
       )}
 
       {/* Courses Table */}
-      <Card>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Courses</h2>
-        <div className="space-y-3">
-          {courses.map((course) => (
-            <div key={course.id} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-              <BookOpen className="w-5 h-5 text-gray-400" />
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{course.name}</p>
-                <p className="text-sm text-gray-500">{course.chapters.length} chapters</p>
+      {courses && courses.length > 0 && (
+        <Card>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Courses</h2>
+          <div className="space-y-3">
+            {courses.map((course) => (
+              <div key={course.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <BookOpen className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{course.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">{course.chapters?.length || 0} chapters</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 pl-8 sm:pl-0">
+                  <div className="w-24 sm:w-32">
+                    <ProgressBar progress={65} />
+                  </div>
+                  <Button variant="secondary" className="text-xs sm:text-sm">Continue</Button>
+                </div>
               </div>
-              <div className="w-32">
-                <ProgressBar progress={65} />
-              </div>
-              <Button variant="secondary" className="text-sm">Continue</Button>
-            </div>
-          ))}
-        </div>
-      </Card>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Areas for Improvement */}
-      <Card>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Areas for Improvement</h2>
-        <div className="space-y-2">
-          {student.weakTopics && Object.entries(student.weakTopics).map(([subject, topics]) => (
-            topics.map((topic) => (
-              <div key={topic} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-gray-900 capitalize">{topic}</span>
-                <span className="text-sm text-gray-500">{subject}</span>
-              </div>
-            ))
-          ))}
-        </div>
-      </Card>
+      {student.weakTopics && Object.keys(student.weakTopics).length > 0 && (
+        <Card>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Areas for Improvement</h2>
+          <div className="space-y-2">
+            {Object.entries(student.weakTopics).map(([subject, topics]) => (
+              topics.map((topic) => (
+                <div key={topic} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span className="text-gray-900 capitalize">{topic}</span>
+                  <span className="text-sm text-gray-500">{subject}</span>
+                </div>
+              ))
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
@@ -382,9 +471,28 @@ const MasteryDashboard = ({ student, studyPlan, courses }) => {
 const StudentDashboard = () => {
   const { appData, currentUser } = useApp();
   
-  const student = appData.students.find(s => s.id === currentUser?.id) || appData.students[0];
+  console.log('StudentDashboard - currentUser:', currentUser);
+  console.log('StudentDashboard - appData.students:', appData.students);
+  
+  const student = appData.students.find(s => s.id === currentUser?.id);
+  
+  console.log('StudentDashboard - found student:', student);
+  
+  // If no student found, show error
+  if (!student) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-gray-500">Loading student data...</p>
+          <p className="text-xs text-gray-400 mt-2">Current User ID: {currentUser?.id}</p>
+          <p className="text-xs text-gray-400">Available Students: {appData.students.map(s => s.id).join(', ')}</p>
+        </div>
+      </div>
+    );
+  }
+  
   const studyPlan = appData.studyPlans.find(p => p.studentId === student.id);
-  const courses = appData.courses.filter(c => student.subjects.includes(c.subject));
+  const courses = appData.courses.filter(c => student.subjects && student.subjects.includes(c.subject));
 
   // Determine which dashboard to show based on age
   if (student.age <= 10) {

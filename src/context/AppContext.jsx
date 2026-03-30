@@ -48,6 +48,21 @@ export const AppProvider = ({ children }) => {
         { id: 'doubt_1', studentId: 'student_1', studentName: 'Priya', subject: 'Math', topic: 'Fractions', question: 'How do I solve fraction addition?', status: 'open', replies: [], date: '2026-03-29', createdAt: '2026-03-29' },
       ];
 
+      // Load persisted courses/chapters/topics from localStorage
+      const savedCourses = JSON.parse(localStorage.getItem('learnsync-courses') || '[]');
+      const savedChapters = JSON.parse(localStorage.getItem('learnsync-chapters') || '[]');
+      const savedTopics = JSON.parse(localStorage.getItem('learnsync-topics') || '[]');
+
+      const defaultCourses = [
+        { id: 'course_1', name: 'Mathematics Fundamentals', subject: 'Math', description: 'Core math concepts', level: 'foundation', createdBy: 'mentor_1', chapters: [] },
+        { id: 'course_2', name: 'Science Exploration', subject: 'Science', description: 'Discover science', level: 'growth', createdBy: 'mentor_1', chapters: [] },
+        { id: 'course_3', name: 'English Mastery', subject: 'English', description: 'Advanced English', level: 'mastery', createdBy: 'mentor_1', chapters: [] },
+      ];
+
+      // Merge: default courses + any saved courses (avoid duplicates by id)
+      const existingIds = new Set(savedCourses.map(c => c.id));
+      const allCourses = [...defaultCourses.filter(c => !existingIds.has(c.id)), ...savedCourses];
+
       setAppData({
         students: [
           { id: 'student_1', name: 'Priya', age: 9, class: '4th', level: 'foundation', role: 'student', onboarded: true, subjects: ['Math', 'English', 'Science'], progress: 45, xp: 120, level_number: 3, streak: 5, attendance: 90, completedTopics: [], weakTopics: { Math: ['fractions'], Science: ['photosynthesis'] }, strongTopics: { English: ['grammar'] } },
@@ -57,13 +72,9 @@ export const AppProvider = ({ children }) => {
         mentors: [
           { id: 'mentor_1', name: 'Dr. Anjali', role: 'mentor', onboarded: true, subjects: ['Math', 'Science'], education: 'M.Sc Mathematics', skillLevel: 'advanced', assignedStudents: ['student_1', 'student_2'], sessionsCompleted: 24, teachingCapacity: 10 },
         ],
-        courses: [
-          { id: 'course_1', name: 'Mathematics Fundamentals', subject: 'Math', description: 'Core math concepts', level: 'foundation' },
-          { id: 'course_2', name: 'Science Exploration', subject: 'Science', description: 'Discover science', level: 'growth' },
-          { id: 'course_3', name: 'English Mastery', subject: 'English', description: 'Advanced English', level: 'mastery' },
-        ],
-        chapters: [],
-        topics: [],
+        courses: allCourses,
+        chapters: savedChapters,
+        topics: savedTopics,
         sessions: [
           { id: 'session_1', mentorId: 'mentor_1', studentId: 'student_1', subject: 'Math', date: '2026-03-28', status: 'completed' },
           { id: 'session_2', mentorId: 'mentor_1', studentId: 'student_2', subject: 'Science', date: '2026-03-29', status: 'scheduled' },
@@ -191,33 +202,78 @@ export const AppProvider = ({ children }) => {
   };
 
   const addCourse = async (course) => {
-    const result = await firestoreService.createCourse(course);
+    const courseId = `course_${Date.now()}`;
+    const newCourse = {
+      ...course,
+      id: courseId,
+      chapters: [],
+      createdBy: course.createdBy || currentUser?.id,
+    };
 
-    if (result.success) {
-      await refreshData();
-    }
+    setAppData(prev => ({
+      ...prev,
+      courses: [...prev.courses, newCourse]
+    }));
 
-    return result;
+    // Persist to localStorage
+    const saved = JSON.parse(localStorage.getItem('learnsync-courses') || '[]');
+    saved.push(newCourse);
+    localStorage.setItem('learnsync-courses', JSON.stringify(saved));
+
+    return { success: true, id: courseId };
   };
 
   const addChapter = async (chapter) => {
-    const result = await firestoreService.createChapter(chapter);
+    const chapterId = `chapter_${Date.now()}`;
+    const newChapter = {
+      ...chapter,
+      id: chapterId,
+      topics: [],
+    };
 
-    if (result.success) {
-      await refreshData();
-    }
+    setAppData(prev => ({
+      ...prev,
+      chapters: [...prev.chapters, newChapter],
+      // Also update the course's chapters array
+      courses: prev.courses.map(c =>
+        c.id === chapter.courseId
+          ? { ...c, chapters: [...(c.chapters || []), chapterId] }
+          : c
+      )
+    }));
 
-    return result;
+    // Persist
+    const savedChapters = JSON.parse(localStorage.getItem('learnsync-chapters') || '[]');
+    savedChapters.push(newChapter);
+    localStorage.setItem('learnsync-chapters', JSON.stringify(savedChapters));
+
+    return { success: true, id: chapterId };
   };
 
   const addTopic = async (topic) => {
-    const result = await firestoreService.createTopic(topic);
+    const topicId = `topic_${Date.now()}`;
+    const newTopic = {
+      ...topic,
+      id: topicId,
+    };
 
-    if (result.success) {
-      await refreshData();
-    }
+    setAppData(prev => ({
+      ...prev,
+      topics: [...prev.topics, newTopic],
+      // Also update the chapter's topics array
+      chapters: prev.chapters.map(ch =>
+        ch.id === topic.chapterId
+          ? { ...ch, topics: [...(ch.topics || []), topicId] }
+          : ch
+      )
+    }));
 
-    return result;
+    // Persist
+    const savedTopics = JSON.parse(localStorage.getItem('learnsync-topics') || '[]');
+    savedTopics.push(newTopic);
+    localStorage.setItem('learnsync-topics', JSON.stringify(savedTopics));
+
+    return { success: true, id: topicId };
   };
 
   const addSession = async (session) => {
