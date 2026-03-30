@@ -10,7 +10,7 @@ export const callGemini = async (prompt) => {
   }
   try {
     // Use Gemini 2.5 Flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
