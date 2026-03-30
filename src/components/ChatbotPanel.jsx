@@ -15,6 +15,7 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(false);
+  const [voiceModeEnabled, setVoiceModeEnabled] = useState(false);
   const [voiceError, setVoiceError] = useState('');
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -50,6 +51,49 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
 
     synthRef.current.speak(utterance);
   }, []);
+
+  const stopRecognition = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+    setVoiceError('');
+  }, [setVoiceError]);
+
+  const requestMicrophonePermissionAndStart = useCallback(() => {
+    if (!recognitionRef.current) {
+      setVoiceError('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+      return;
+    }
+
+    const startRecognition = () => {
+      try {
+        recognitionRef.current?.start();
+      } catch {
+        setVoiceError('Could not start voice input. Please try again.');
+      }
+    };
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(() => {
+          setVoiceError('');
+          startRecognition();
+        })
+        .catch((err) => {
+          if (err.name === 'NotAllowedError') {
+            setVoiceError('Microphone permission denied. Please allow access.');
+          } else if (err.name === 'NotFoundError') {
+            setVoiceError('No microphone found. Please connect one and try again.');
+          } else {
+            setVoiceError('Could not access microphone. Please check your settings.');
+          }
+        });
+    } else {
+      setVoiceError('');
+      startRecognition();
+    }
+  }, [setVoiceError]);
 
   // Handle sending voice message
   const handleSendVoiceMessage = useCallback(async (transcript) => {
@@ -230,46 +274,33 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const toggleListening = () => {
-    if (!recognitionRef.current) {
-      setVoiceError('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (voiceModeEnabled && !isListening) {
+      requestMicrophonePermissionAndStart();
       return;
     }
 
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-      setVoiceError('');
-    } else {
-      // Check microphone permission first
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(() => {
-            try {
-              setVoiceError('');
-              recognitionRef.current.start();
-            } catch {
-              setVoiceError('Could not start voice input. Please try again.');
-            }
-          })
-          .catch((err) => {
-            if (err.name === 'NotAllowedError') {
-              setVoiceError('Microphone permission denied. Please allow microphone access in your browser settings.');
-            } else if (err.name === 'NotFoundError') {
-              setVoiceError('No microphone found. Please connect a microphone and try again.');
-            } else {
-              setVoiceError('Could not access microphone. Please check your settings.');
-            }
-          });
-      } else {
-        try {
-          setVoiceError('');
-          recognitionRef.current.start();
-        } catch {
-          setVoiceError('Could not start voice input. Please try again.');
-        }
-      }
+    if (!voiceModeEnabled && isListening) {
+      stopRecognition();
     }
+  }, [voiceModeEnabled, isOpen, isListening, requestMicrophonePermissionAndStart, stopRecognition]);
+
+  useEffect(() => {
+    if (!isOpen && voiceModeEnabled) {
+      stopRecognition();
+      setVoiceModeEnabled(false);
+    }
+  }, [isOpen, voiceModeEnabled, stopRecognition]);
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopRecognition();
+      return;
+    }
+
+    requestMicrophonePermissionAndStart();
   };
 
   const stopSpeaking = () => {
@@ -466,6 +497,23 @@ Respond ONLY with valid JSON in this exact format, no additional text:
         
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setVoiceModeEnabled(prev => !prev)}
+            className={`p-2 md:p-3 rounded-xl transition-all ${
+              voiceModeEnabled
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title={voiceModeEnabled ? 'Voice mode enabled' : 'Enable voice mode'}
+          >
+            <Mic className="w-4 h-4 md:w-5 md:h-5" />
+          </button>
+          {voiceModeEnabled && (
+            <span className="text-xs md:text-sm text-green-600 font-medium hidden md:inline">
+              Voice mode listening
+            </span>
+          )}
+
+          <button
             onClick={toggleAutoSpeak}
             className={`p-2 md:p-3 rounded-xl transition-all ${
               autoSpeak
@@ -498,7 +546,7 @@ Respond ONLY with valid JSON in this exact format, no additional text:
                 <div className="flex-1">
                   <p className="text-xs md:text-sm font-medium text-blue-900 mb-1">Voice Mode Available!</p>
                   <p className="text-xs text-blue-700 mb-1 md:mb-2">
-                    Click the microphone button and speak your question, or type as usual. 
+                    Click the microphone button (or toggle the Voice Mode button above) and speak your question, or type as usual. 
                     Enable auto-speak (speaker icon above) to hear responses read aloud.
                   </p>
                   <p className="text-xs text-blue-600 font-medium">
@@ -652,13 +700,17 @@ Respond ONLY with valid JSON in this exact format, no additional text:
           <div className="relative">
             <button
               onClick={toggleListening}
-              disabled={loading}
+              disabled={loading || voiceModeEnabled}
               className={`p-2 md:p-3 rounded-lg transition-all ${
                 isListening
                   ? 'bg-red-600 text-white hover:bg-red-700 animate-pulse'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-              title={isListening ? 'Stop listening (click or speak)' : 'Start voice input (click and speak)'}
+              } ${voiceModeEnabled ? 'cursor-not-allowed opacity-60' : ''}`}
+              title={voiceModeEnabled
+                ? 'Voice mode manages the microphone'
+                : isListening
+                  ? 'Stop listening (click or speak)'
+                  : 'Start voice input (click and speak)'}
             >
               {isListening ? <MicOff className="w-4 h-4 md:w-5 md:h-5" /> : <Mic className="w-4 h-4 md:w-5 md:h-5" />}
             </button>
