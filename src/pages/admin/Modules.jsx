@@ -1,6 +1,10 @@
 import { useState, useRef } from 'react'
 import { Plus, X, Upload, FileText, File, ChevronDown, ChevronUp, Users, GraduationCap, BookOpen, ShieldCheck, Trash2 } from 'lucide-react'
-import { mockCourses as initialStudentCourses } from '../../../LearnSync - Copy/src/data/mockData'
+const initialStudentCourses = [
+  { id: 1, name: 'Mathematics Fundamentals', forClass: '7', level: 'Intermediate', students: 12, mentors: 2, avgProgress: 68, modules: [{ id: 1, name: 'Fractions Guide.pdf', type: 'pdf', size: '1.2 MB', uploadedAt: '2026-03-10' }] },
+  { id: 2, name: 'English Grammar Basics', forClass: '4', level: 'Beginner', students: 8, mentors: 1, avgProgress: 45, modules: [] },
+  { id: 3, name: 'Science Exploration', forClass: '7', level: 'Intermediate', students: 10, mentors: 2, avgProgress: 72, modules: [{ id: 2, name: 'Photosynthesis.pdf', type: 'pdf', size: '0.8 MB', uploadedAt: '2026-03-15' }] },
+]
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 const TRAINING_TOPICS = ['Classroom Management', 'Child Psychology', 'Lesson Planning', 'Assessment Techniques', 'Digital Tools', 'Communication Skills']

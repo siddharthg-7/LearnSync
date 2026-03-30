@@ -302,10 +302,19 @@ const MasteryDashboard = ({ student, studyPlan, courses }) => {
 // Main Dashboard Component
 const StudentDashboard = () => {
   const { appData, currentUser } = useApp();
-  
-  const student = appData.students.find(s => s.id === currentUser?.id) || appData.students[0];
-  const studyPlan = appData.studyPlans.find(p => p.studentId === student.id);
-  const courses = appData.courses.filter(c => student.subjects.includes(c.subject));
+
+  if (!appData) {
+    return null;
+  }
+
+  const students = Array.isArray(appData.students) ? appData.students : [];
+  const student = students.find(s => s.id === currentUser?.id) || students[0];
+  const studyPlans = Array.isArray(appData.studyPlans) ? appData.studyPlans : [];
+  const studyPlan = student ? studyPlans.find(p => p.studentId === student.id) : null;
+  const allCourses = Array.isArray(appData.courses) ? appData.courses : [];
+  const courses = student
+    ? allCourses.filter(c => (student.subjects || []).includes(c.subject))
+    : [];
 
   // Determine which dashboard to show based on age
   if (student.age <= 10) {

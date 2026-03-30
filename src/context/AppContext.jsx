@@ -19,17 +19,26 @@ export const AppProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize data from localStorage or create mock data
-    let data = storage.get('learnSyncData');
+    // Current version of our data schema/mock data
+    const DATA_VERSION = '1.3'; // increment to force reset
     
-    if (!data) {
-      data = initializeMockData();
-      storage.set('learnSyncData', data);
+    // Initialize data from localStorage or create mock data
+    let stored = storage.get('learnSyncData');
+    
+    // If no data OR version mismatch, use fresh mock data
+    if (!stored || stored.version !== DATA_VERSION) {
+      const data = initializeMockData();
+      const freshData = { ...data, version: DATA_VERSION };
+      storage.set('learnSyncData', freshData);
+      setAppData(freshData);
+      setCurrentUser(freshData.currentUser);
+      setCurrentRole(freshData.currentRole || 'student');
+    } else {
+      setAppData(stored);
+      setCurrentUser(stored.currentUser);
+      setCurrentRole(stored.currentRole || 'student');
     }
-
-    setAppData(data);
-    setCurrentUser(data.currentUser);
-    setCurrentRole(data.currentRole || 'student');
+    
     setLoading(false);
   }, []);
 

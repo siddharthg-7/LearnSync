@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { AlertTriangle, TrendingDown, User, GraduationCap, CheckCheck, Trash2, Filter } from 'lucide-react'
-import { mockNotifications as initialNotifications } from '../../../LearnSync - Copy/src/data/mockData'
+const initialNotifications = [
+  { id: 1, type: 'student-flag', student: 'Priya Sharma', issue: 'Low Attendance', flaggedBy: 'Rahul Mehta', date: '2026-03-29', priority: 'high', status: 'unread', description: 'Attendance dropped below 70% this month. Immediate follow-up recommended.' },
+  { id: 2, type: 'mentor-performance', mentor: 'Rahul Mehta', trend: 'decreasing', date: '2026-03-28', priority: 'medium', status: 'unread', description: 'Student improvement scores have declined over the last 3 sessions.', scoreHistory: [82, 78, 74, 70, 65] },
+  { id: 3, type: 'student-flag', student: 'Aarav Kumar', issue: 'Weak Topics', flaggedBy: 'Dr. Anjali Verma', date: '2026-03-27', priority: 'medium', status: 'read', description: 'Struggling with fractions and decimals. Needs targeted practice.' },
+]
 
 const PRIORITY_STYLES = {
   high: 'bg-red-50 border-red-200 text-red-600',

@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentOnboarding from './pages/student/StudentOnboarding';
 import Courses from './pages/student/Courses';
+import AITutor from './pages/student/AITutor';
 import Doubts from './pages/student/Doubts';
 import StudyPlan from './pages/student/StudyPlan';
 import Profile from './pages/student/Profile';
@@ -67,6 +68,7 @@ const AppRoutes = () => {
           <>
             <Route path="/" element={<StudentDashboard />} />
             <Route path="/courses" element={<Courses />} />
+            <Route path="/ai-tutor" element={<AITutor />} />
             <Route path="/study-plan" element={<StudyPlan />} />
             <Route path="/doubts" element={<Doubts />} />
             <Route path="/profile" element={<Profile />} />

@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import { Trash2, Search, ChevronUp, ChevronDown, X, Users, BookOpen, TrendingUp, Star, Calendar } from 'lucide-react'
-import { mockMentors as initialMentors, mockStudents } from '../../../LearnSync - Copy/src/data/mockData'
+const initialMentors = [
+  { id: 1, name: 'Dr. Anjali Verma', subjects: ['Math', 'Science'], studentsAssigned: 2, sessionsCompleted: 45, attendance: 92, avgImprovement: 25, effectivenessScore: 88, progress: 88, status: 'active' },
+  { id: 2, name: 'Rahul Mehta', subjects: ['English', 'Math'], studentsAssigned: 1, sessionsCompleted: 28, attendance: 78, avgImprovement: 18, effectivenessScore: 62, progress: 62, status: 'active' },
+]
+const mockStudents = [
+  { id: 1, name: 'Aarav Kumar', class: '7', age: 12, subjects: ['Math', 'Science'], assignedMentor: 'Dr. Anjali Verma', sessions: 10, attendance: 85, avgScore: 72, overallProgress: 65, status: 'active', weakTopics: ['fractions'] },
+  { id: 2, name: 'Priya Sharma', class: '4', age: 9, subjects: ['Math', 'English'], assignedMentor: 'Rahul Mehta', sessions: 6, attendance: 70, avgScore: 55, overallProgress: 45, status: 'at-risk', weakTopics: ['subtraction'] },
+  { id: 3, name: 'Rohan Patel', class: '11', age: 16, subjects: ['Math', 'Science', 'English'], assignedMentor: 'Dr. Anjali Verma', sessions: 14, attendance: 92, avgScore: 85, overallProgress: 78, status: 'active', weakTopics: ['calculus'] },
+]
 
 function ProgressBar({ value }) {
   const color = value >= 80 ? 'bg-green-500' : value >= 60 ? 'bg-blue-500' : 'bg-red-400'

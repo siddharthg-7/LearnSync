@@ -1,19 +1,18 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 import ProgressBar from '../../components/ProgressBar';
-import ChatbotPanel from '../../components/ChatbotPanel';
-import { BookOpen, Lock, CheckCircle, Play, MessageCircle, Sparkles } from 'lucide-react';
+import { BookOpen, Lock, CheckCircle, Play, MessageCircle, Sparkles, Brain } from 'lucide-react';
 
 const Courses = () => {
   const { appData, currentUser, updateStudent } = useApp();
+  const navigate = useNavigate();
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [showTopicModal, setShowTopicModal] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false);
-  const [chatbotContext, setChatbotContext] = useState(null);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
 
@@ -82,14 +81,6 @@ const Courses = () => {
     setShowTopicModal(true);
     setAnswers({});
     setShowResults(false);
-  };
-
-  const handleSendToChatbot = () => {
-    setChatbotContext({
-      title: selectedTopic.name,
-      content: selectedTopic.content
-    });
-    setShowChatbot(true);
   };
 
   const handleSubmitQuiz = () => {
@@ -196,7 +187,9 @@ const Courses = () => {
               .filter(ch => selectedCourse.chapters.includes(ch.id))
               .sort((a, b) => a.order - b.order)
               .map((chapter, chapterIndex) => {
-                const topics = appData.topics.filter(t => chapter.topics.includes(t.id));
+                const topics = (chapter.topics || [])
+                  .map((id) => appData.topics.find(t => t.id === id))
+                  .filter(Boolean);
                 
                 return (
                   <div key={chapter.id} className="mb-6">
@@ -250,107 +243,199 @@ const Courses = () => {
         </div>
       )}
 
-      {/* Topic Learning Modal */}
+      {/* Topic Learning Modal — Premium Learning Module Format */}
       <Modal
         isOpen={showTopicModal}
         onClose={() => setShowTopicModal(false)}
         title={selectedTopic?.name || ''}
       >
         {selectedTopic && (
-          <div className="space-y-6">
-            {/* Send to Chatbot Button */}
-            <div className="flex justify-end">
+          <div className="space-y-12 pb-8">
+            {/* 1. Header Action Panel */}
+            <div className="flex justify-between items-center bg-indigo-50 p-4 rounded-2xl border border-indigo-100 shadow-sm sticky top-0 z-10">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
+                <span className="text-xs font-bold text-indigo-600 tracking-wider uppercase">Topic Study Mode</span>
+              </div>
               <Button
                 variant="secondary"
-                onClick={handleSendToChatbot}
-                className="flex items-center gap-2"
+                onClick={() => {
+                  navigate('/ai-tutor', {
+                    state: {
+                      context: {
+                        title: selectedTopic.name,
+                        content: selectedTopic.content,
+                        autoPrompt: 'Explain'
+                      }
+                    }
+                  });
+                  setShowTopicModal(false); // Close modal and focus on AI
+                }}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-none shadow-md transform hover:scale-105 active:scale-95 text-xs py-2"
               >
-                <MessageCircle className="w-4 h-4" />
-                Ask AI About This
+                <Sparkles className="w-3.5 h-3.5" />
+                Ask AI Assistant
               </Button>
             </div>
 
-            {/* Content */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Explanation</h3>
-              <p className="text-gray-700">{selectedTopic.content}</p>
-            </div>
+            {/* 2. Introduction Section */}
+            <section>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 border-b-2 border-blue-500 pb-1">Introduction</h2>
+              </div>
+              <p className="text-lg text-gray-700 font-medium leading-relaxed italic border-l-4 border-blue-200 pl-4 py-2 bg-blue-50/30 rounded-r-lg">
+                {selectedTopic.introduction || "Let's explore the core principles of this topic and understand why it matters in our daily lives."}
+              </p>
+              <p className="mt-4 text-gray-700 leading-relaxed">
+                {selectedTopic.content}
+              </p>
+            </section>
 
-            {/* Key Points */}
-            {selectedTopic.keyPoints && selectedTopic.keyPoints.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Key Points</h3>
-                <ul className="list-disc list-inside space-y-1 text-gray-700">
-                  {selectedTopic.keyPoints.map((point, i) => (
-                    <li key={i}>{point}</li>
+            {/* 3. Key Concepts & 4. Detailed Explanation */}
+            <section className="bg-gray-50 p-6 rounded-2xl border border-gray-100 shadow-inner">
+               <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 border-b-2 border-amber-500 pb-1">Key Concepts</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {(selectedTopic.keyPoints || ["Basic fundamentals", "Core theory", "Practical use"]).map((point, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <span className="w-6 h-6 flex items-center justify-center bg-amber-50 text-amber-600 rounded-full text-xs font-bold shrink-0">{i+1}</span>
+                    <p className="text-sm text-gray-700">{point}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-4 prose prose-indigo max-w-none">
+                <h3 className="text-lg font-semibold text-gray-800">Detailed Explanation</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {selectedTopic.detailedExplanation || `To understand ${selectedTopic.name}, we must dive deeper into how its components interact. This involves analyzing patterns, structures, and their impact on surrounding elements.`}
+                </p>
+              </div>
+            </section>
+
+            {/* 5. Real-world Examples */}
+            <section>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 border-b-2 border-emerald-500 pb-1">Examples</h2>
+              </div>
+              <div className="space-y-4">
+                {(selectedTopic.examples || ["Consider how this works in a car engine", "Imagine a library where books are sorted by color"]).map((example, i) => (
+                  <div key={i} className="p-5 bg-gradient-to-r from-emerald-50 to-white rounded-2xl border-l-4 border-emerald-500 shadow-sm">
+                    <p className="text-gray-800 font-medium leading-relaxed">{example}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* 6. Diagrams Section (Text-based with premium container) */}
+            <section className="bg-zinc-900 p-8 rounded-3xl text-white overflow-hidden relative">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                 <BookOpen className="w-24 h-24" />
+              </div>
+              <h2 className="text-xl font-bold mb-6 text-indigo-400 border-b border-white/10 pb-2">Topic Visualizer</h2>
+              <div className="bg-white/5 border border-white/10 p-6 rounded-2xl font-mono text-xs sm:text-sm leading-6 whitespace-pre text-indigo-100">
+                {selectedTopic.diagramDesc || `
+[ Index 0 | Index 1 | Index 2 | Index 3 ]
+[ "DataA" | "DataB" | "DataC" | "DataD" ]
+ ──────────────────────────────────────
+      Contiguous Memory Slots
+                `}
+              </div>
+              <p className="mt-4 text-xs text-zinc-400 text-center italic uppercase tracking-widest">Figure 1.1 — Structural Representation of {selectedTopic.name}</p>
+            </section>
+
+            {/* 7. Summary & 10. Glossary */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <section className="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100">
+                <h2 className="text-xl font-bold text-indigo-900 mb-4">Quick Summary</h2>
+                <ul className="space-y-3">
+                  {(selectedTopic.summary ? [selectedTopic.summary] : ["Core fundamentals are mastered.", "Patterns are identified.", "Ready for assessment."]).map((s, i) => (
+                    <li key={i} className="flex gap-2 text-indigo-800 text-sm italic">
+                      <span className="text-indigo-400">•</span> {s}
+                    </li>
                   ))}
                 </ul>
-              </div>
-            )}
+              </section>
 
-            {/* Examples */}
-            {selectedTopic.examples && selectedTopic.examples.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Examples</h3>
-                <div className="space-y-2">
-                  {selectedTopic.examples.map((example, i) => (
-                    <div key={i} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <p className="text-gray-700">{example}</p>
+              <section className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                <h2 className="text-xl font-bold text-slate-800 mb-4">Glossary</h2>
+                <div className="space-y-3">
+                  {(selectedTopic.glossary || [
+                    { t: "Logic", d: "A systematic way of thinking." },
+                    { t: "Pattern", d: "A regular and intelligible form or sequence." }
+                  ]).map((item, i) => (
+                    <div key={i} className="text-sm">
+                      <span className="font-bold text-slate-900">{item.t}:</span> <span className="text-slate-600">{item.d}</span>
                     </div>
                   ))}
                 </div>
+              </section>
+            </div>
+
+            {/* 8. Important Questions Section */}
+            <section className="border-t-2 border-dashed border-gray-200 pt-12">
+               <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Critical Inquiry Questions</h2>
               </div>
-            )}
-
-            {/* Summary */}
-            {selectedTopic.summary && (
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
-                <p className="text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
-                  {selectedTopic.summary}
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-5 bg-white rounded-xl border-t-4 border-indigo-400 shadow-sm">
+                  <h4 className="font-bold text-xs text-indigo-600 uppercase mb-2">Conceptual Question</h4>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    How does {selectedTopic.name} impact the overall performance of a system when data sizes grow exponentially?
+                  </p>
+                </div>
+                <div className="p-5 bg-white rounded-xl border-t-4 border-rose-400 shadow-sm">
+                  <h4 className="font-bold text-xs text-rose-600 uppercase mb-2">Practical Application</h4>
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    Identify three scenarios in modern software development where choosing an alternative approach would be superior to {selectedTopic.name}.
+                  </p>
+                </div>
               </div>
-            )}
+            </section>
 
-            {/* AI Simplify Button */}
-            <Button
-              variant="secondary"
-              className="w-full flex items-center justify-center gap-2"
-              onClick={() => {
-                setChatbotContext({
-                  title: selectedTopic.name,
-                  content: selectedTopic.content
-                });
-                setShowChatbot(true);
-              }}
-            >
-              <Sparkles className="w-4 h-4" />
-              Explain Simply with AI
-            </Button>
-
-            {/* Questions */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Practice Questions</h3>
-              <div className="space-y-4">
-                {selectedTopic.questions.map((q, index) => (
-                  <div key={q.id} className="p-4 bg-gray-50 rounded-xl">
-                    <p className="font-medium text-gray-900 mb-3">
-                      {index + 1}. {q.question}
+            {/* 9. Interactive Quiz Section */}
+            <section className="bg-gradient-to-br from-indigo-600 to-violet-700 p-8 rounded-3xl shadow-xl text-white">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-white/20 text-white rounded-lg">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <h2 className="text-2xl font-bold">Knowledge Check</h2>
+              </div>
+              
+              <div className="space-y-6">
+                {(selectedTopic.questions || []).map((q, index) => (
+                  <div key={q.id} className="p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10">
+                    <p className="font-semibold text-lg mb-4 flex items-center gap-3">
+                      <span className="w-8 h-8 flex items-center justify-center bg-white text-indigo-700 rounded-full text-sm font-bold">{index + 1}</span>
+                      {q.question}
                     </p>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {q.options.map((option, optIndex) => (
                         <label
                           key={optIndex}
-                          className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                             showResults
                               ? optIndex === q.correct
-                                ? 'border-green-500 bg-green-50'
+                                ? 'border-emerald-400 bg-emerald-400/20 shadow-lg'
                                 : answers[q.id] === optIndex
-                                ? 'border-red-500 bg-red-50'
-                                : 'border-gray-200'
+                                ? 'border-rose-400 bg-rose-400/20'
+                                : 'border-white/10'
                               : answers[q.id] === optIndex
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-white bg-white/20 scale-[1.02]'
+                              : 'border-white/10 hover:border-white/30 hover:bg-white/5'
                           }`}
                         >
                           <input
@@ -359,47 +444,44 @@ const Courses = () => {
                             checked={answers[q.id] === optIndex}
                             onChange={() => setAnswers({ ...answers, [q.id]: optIndex })}
                             disabled={showResults}
-                            className="w-4 h-4"
+                            className="hidden"
                           />
-                          <span className="text-gray-700">{option}</span>
+                          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${answers[q.id] === optIndex ? 'bg-white border-white' : 'border-white/40'}`}>
+                            {answers[q.id] === optIndex && <div className="w-2 h-2 bg-indigo-600 rounded-full" />}
+                          </span>
+                          <span className="text-white/90 font-medium">{option}</span>
                         </label>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
 
-            {!showResults ? (
-              <Button
-                onClick={handleSubmitQuiz}
-                disabled={Object.keys(answers).length !== selectedTopic.questions.length}
-                className="w-full"
-              >
-                Submit Answers
-              </Button>
-            ) : (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                <p className="text-blue-900 font-semibold">
-                  Score: {selectedTopic.questions.filter(q => answers[q.id] === q.correct).length} / {selectedTopic.questions.length}
-                </p>
-                <p className="text-blue-700 text-sm mt-1">
-                  You earned {selectedTopic.xpReward} XP!
-                </p>
-              </div>
-            )}
+              {!showResults ? (
+                <Button
+                  onClick={handleSubmitQuiz}
+                  disabled={Object.keys(answers).length !== (selectedTopic.questions?.length || 0)}
+                  className="w-full mt-8 bg-white text-indigo-600 hover:bg-gray-100 border-none py-4 text-lg font-bold shadow-2xl transition-all hover:translate-y-[-2px] active:translate-y-[1px] disabled:opacity-50"
+                >
+                  Confirm Answers & Claim XP
+                </Button>
+              ) : (
+                <div className="mt-8 p-6 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <p className="text-white/80 uppercase tracking-widest text-xs font-bold mb-1">Your Performance</p>
+                    <p className="text-3xl font-black">
+                      Score: {selectedTopic.questions.filter(q => answers[q.id] === q.correct).length} / {selectedTopic.questions.length}
+                    </p>
+                  </div>
+                  <div className="bg-emerald-400 text-emerald-950 px-6 py-2 rounded-full font-bold shadow-lg">
+                    +{selectedTopic.xpReward} XP Earned
+                  </div>
+                </div>
+              )}
+            </section>
           </div>
         )}
       </Modal>
-
-      {/* Chatbot Panel */}
-      <ChatbotPanel
-        isOpen={showChatbot}
-        onClose={() => setShowChatbot(false)}
-        context={chatbotContext}
-        onQuizGenerated={handleQuizCompletion}
-        studentId={student.id}
-      />
     </div>
   );
 };

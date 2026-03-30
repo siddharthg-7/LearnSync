@@ -34,7 +34,7 @@ const Login = ({ onLogin }) => {
               <p className="text-gray-600 text-sm">Learn, grow, and track your progress</p>
             </div>
 
-            
+
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {appData.students.map((student) => (
                 <button
@@ -55,7 +55,7 @@ const Login = ({ onLogin }) => {
                   </div>
                 </button>
               ))}
-              
+
               <button
                 onClick={() => handleUserSelect({ id: 'new', onboarded: false }, 'student')}
                 className="w-full p-3 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition-all"
@@ -84,7 +84,7 @@ const Login = ({ onLogin }) => {
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">Mentors</h2>
               <p className="text-gray-600 text-sm">Teach, create content, and guide students</p>
             </div>
-            
+
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {appData.mentors.map((mentor) => (
                 <button
@@ -105,7 +105,7 @@ const Login = ({ onLogin }) => {
                   </div>
                 </button>
               ))}
-              
+
               <button
                 onClick={() => handleUserSelect({ id: 'new', onboarded: false }, 'mentor')}
                 className="w-full p-3 rounded-xl border-2 border-dashed border-gray-300 hover:border-green-600 hover:bg-green-50 transition-all"
@@ -134,7 +134,7 @@ const Login = ({ onLogin }) => {
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">NGO Admin</h2>
               <p className="text-gray-600 text-sm">Monitor, analyze, and manage programs</p>
             </div>
-            
+
             <div className="space-y-2">
               <button
                 onClick={() => handleUserSelect({ id: 'admin', name: 'Admin User' }, 'admin')}

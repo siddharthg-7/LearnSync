@@ -16,8 +16,10 @@ const StudyPlan = () => {
     studyHoursPerDay: 2
   });
 
-  const student = appData.students.find(s => s.id === currentUser?.id) || appData.students[0];
-  const studyPlan = appData.studyPlans.find(p => p.studentId === student.id);
+  const students = Array.isArray(appData?.students) ? appData.students : [];
+  const student = students.find(s => s.id === currentUser?.id) || students[0];
+  const studyPlans = Array.isArray(appData?.studyPlans) ? appData.studyPlans : [];
+  const studyPlan = student ? studyPlans.find(p => p.studentId === student.id) : null;
 
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 

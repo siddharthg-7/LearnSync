@@ -1,27 +1,15 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Home, BookOpen, Users, Calendar, HelpCircle, BarChart3, Menu, X, LogOut, User, Sparkles } from 'lucide-react';
-import ChatbotPanel from './ChatbotPanel';
+import { Home, BookOpen, Users, Calendar, HelpCircle, BarChart3, Menu, X, LogOut, User, Sparkles, GraduationCap, Bell } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const { currentRole, currentUser, updateCurrentUser, updateStudent } = useApp();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showChatbot, setShowChatbot] = useState(false);
   const location = useLocation();
 
   const handleLogout = () => {
     updateCurrentUser(null);
-  };
-
-  const handleQuizCompletion = (quizResult) => {
-    if (currentRole === 'student' && currentUser) {
-      const updatedStudent = {
-        ...currentUser,
-        xp: currentUser.xp + Math.floor(quizResult.score / 10),
-      };
-      updateStudent(currentUser.id, updatedStudent);
-    }
   };
 
   const navigation = {
@@ -31,7 +19,7 @@ const Layout = ({ children }) => {
       { name: 'Study Planner', icon: Calendar, path: '/study-plan' },
       { name: 'Doubts', icon: HelpCircle, path: '/doubts' },
       { name: 'Profile', icon: User, path: '/profile' },
-      { name: 'AI Tutor', icon: Sparkles, path: '#', action: () => setShowChatbot(true), special: true }
+      { name: 'AI Tutor', icon: Sparkles, path: '/ai-tutor', special: true }
     ],
     mentor: [
       { name: 'Dashboard', icon: Home, path: '/mentor' },
@@ -86,8 +74,10 @@ const Layout = ({ children }) => {
                 key={item.name}
                 to={item.path}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                  isActive 
-                    ? 'bg-blue-50 text-blue-600' 
+                  item.special
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : isActive
+                    ? 'bg-blue-50 text-blue-600'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
@@ -137,15 +127,7 @@ const Layout = ({ children }) => {
 
         {/* Page Content */}
         <div className="flex-1 overflow-auto p-6">
-          {currentRole === 'student' && showChatbot ? (
-            <ChatbotPanel
-              isOpen={showChatbot}
-              onQuizGenerated={handleQuizCompletion}
-              studentId={currentUser?.id}
-            />
-          ) : (
-            children
-          )}
+          {children}
         </div>
       </div>
     </div>

@@ -1,6 +1,15 @@
 import { useState } from 'react'
 import { Search, ChevronUp, ChevronDown, Trash2, X, User, BookOpen, Calendar, TrendingUp, AlertTriangle } from 'lucide-react'
-import { mockStudents as initialStudents, mockCourses } from '../../../LearnSync - Copy/src/data/mockData'
+const initialStudents = [
+  { id: 1, name: 'Aarav Kumar', class: '7', age: 12, subjects: ['Math', 'Science'], assignedMentor: 'Dr. Anjali Verma', sessions: 10, attendance: 85, avgScore: 72, overallProgress: 65, status: 'active', weakTopics: ['fractions', 'decimals'] },
+  { id: 2, name: 'Priya Sharma', class: '4', age: 9, subjects: ['Math', 'English'], assignedMentor: 'Rahul Mehta', sessions: 6, attendance: 70, avgScore: 55, overallProgress: 45, status: 'at-risk', weakTopics: ['subtraction'] },
+  { id: 3, name: 'Rohan Patel', class: '11', age: 16, subjects: ['Math', 'Science', 'English'], assignedMentor: 'Dr. Anjali Verma', sessions: 14, attendance: 92, avgScore: 85, overallProgress: 78, status: 'active', weakTopics: ['calculus'] },
+]
+const mockCourses = [
+  { id: 1, name: 'Mathematics', subject: 'Math', level: 'Intermediate', students: 2, mentors: 1, avgProgress: 55, modules: [] },
+  { id: 2, name: 'English Grammar', subject: 'English', level: 'Beginner', students: 1, mentors: 1, avgProgress: 45, modules: [] },
+  { id: 3, name: 'Science Basics', subject: 'Science', level: 'Intermediate', students: 2, mentors: 1, avgProgress: 70, modules: [] },
+]
 
 function ProgressBar({ value }) {
   const color = value >= 75 ? 'bg-green-500' : value >= 50 ? 'bg-blue-500' : 'bg-red-400'
