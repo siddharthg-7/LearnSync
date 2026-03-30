@@ -6,7 +6,7 @@ import ChatbotPanel from './ChatbotPanel';
 
 const Layout = ({ children }) => {
   const { currentRole, currentUser, updateCurrentUser, updateStudent } = useApp();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
   const [showChatbot, setShowChatbot] = useState(false);
   const location = useLocation();
 
@@ -28,7 +28,10 @@ const Layout = ({ children }) => {
     student: [
       { name: 'Dashboard', icon: Home, path: '/' },
       { name: 'Courses', icon: BookOpen, path: '/courses' },
-      { name: 'Study Planner', icon: Calendar, path: '/study-plan' },
+      // Only show Study Planner for older students (Growth and Mastery modes)
+      ...(currentUser && parseInt(currentUser.class) > 5 ? [
+        { name: 'Study Planner', icon: Calendar, path: '/study-plan' }
+      ] : []),
       { name: 'Doubts', icon: HelpCircle, path: '/doubts' },
       { name: 'Profile', icon: User, path: '/profile' },
       { name: 'AI Tutor', icon: Sparkles, path: '#', action: () => setShowChatbot(true), special: true }
@@ -54,13 +57,13 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-white border-r border-gray-200 transition-all duration-300 overflow-hidden`}>
-        <div className="p-6">
-          <h1 className="text-2xl font-semibold text-gray-900">LearnSync</h1>
+      {/* Sidebar - Fixed on mobile, relative on desktop */}
+      <div className={`fixed md:relative inset-y-0 left-0 z-50 ${sidebarOpen ? 'w-64' : 'w-0 md:w-64'} bg-white border-r border-gray-200 transition-all duration-300 overflow-hidden`}>
+        <div className="p-4 md:p-6">
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">LearnSync</h1>
         </div>
         
-        <nav className="px-4 space-y-2">
+        <nav className="px-2 md:px-4 space-y-2">
           {currentNav.map((item) => {
             const isActive = location.pathname === item.path;
             
@@ -68,15 +71,18 @@ const Layout = ({ children }) => {
               return (
                 <button
                   key={item.name}
-                  onClick={item.action}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  onClick={() => {
+                    item.action();
+                    setSidebarOpen(false); // Close sidebar on mobile after click
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-xl transition-all ${
                     item.special
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.name}</span>
+                  <span className="font-medium text-sm md:text-base">{item.name}</span>
                 </button>
               );
             }
@@ -85,24 +91,33 @@ const Layout = ({ children }) => {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                onClick={() => setSidebarOpen(false)} // Close sidebar on mobile after click
+                className={`flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-xl transition-colors ${
                   isActive 
                     ? 'bg-blue-50 text-blue-600' 
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <item.icon className="w-5 h-5" />
-                <span>{item.name}</span>
+                <span className="text-sm md:text-base">{item.name}</span>
               </Link>
             );
           })}
         </nav>
       </div>
 
+      {/* Overlay for mobile sidebar */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Topbar */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 hover:bg-gray-50 rounded-lg"
@@ -110,13 +125,13 @@ const Layout = ({ children }) => {
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
                 {currentUser?.name?.[0] || 'U'}
               </div>
-              <div>
-                <span className="text-gray-900 font-medium block">
+              <div className="hidden sm:block">
+                <span className="text-gray-900 font-medium block text-sm md:text-base">
                   {currentUser?.name || 'User'}
                 </span>
                 <span className="text-gray-500 text-xs capitalize">
@@ -130,13 +145,13 @@ const Layout = ({ children }) => {
               className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
               title="Logout"
             >
-              <LogOut className="w-5 h-5 text-gray-600" />
+              <LogOut className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
             </button>
           </div>
         </div>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 md:p-6">
           {currentRole === 'student' && showChatbot ? (
             <ChatbotPanel
               isOpen={showChatbot}

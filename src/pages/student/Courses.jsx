@@ -28,18 +28,10 @@ const Courses = () => {
     };
 
     updateStudent(student.id, updatedStudent);
-    
-    // TODO: Notify mentor about quiz completion
-    console.log('Quiz completed - notify mentor:', {
-      studentId: student.id,
-      studentName: student.name,
-      topic: quizResult.topic,
-      score: quizResult.score,
-      mentorId: student.mentorId
-    });
   };
 
   const student = appData.students.find(s => s.id === currentUser?.id) || appData.students[0];
+  const isYoungStudent = student.age <= 10; // Foundation mode for ages 5-10
   
   // Determine student level based on class
   const getStudentLevel = (classValue) => {
@@ -123,24 +115,23 @@ const Courses = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold text-gray-900">My Courses</h1>
-        <p className="text-gray-500 mt-1">Continue your learning journey</p>
-      </div>
+    <div className="space-y-4 md:space-y-6">
+      {/* Header - Gamified for young students */}
+      {isYoungStudent ? (
+        <div className="text-center bg-gradient-to-r from-purple-100 via-pink-100 to-yellow-100 rounded-3xl p-4 md:p-6">
+          <div className="text-5xl md:text-6xl mb-2">📚</div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">My Adventures!</h1>
+          <p className="text-base md:text-lg text-purple-600 font-semibold mt-1">Choose your quest</p>
+        </div>
+      ) : (
+        <div>
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900">My Courses</h1>
+          <p className="text-gray-500 mt-1 text-sm md:text-base">Continue your learning journey</p>
+        </div>
+      )}
 
       {!selectedCourse ? (
         <>
-          {/* Debug info - remove after testing */}
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-            <p className="text-sm text-gray-700">
-              <strong>Debug Info:</strong> Class: {student.class} | Level: {studentLevel} | 
-              Subjects: {student.subjects.join(', ')} | 
-              Total Courses Available: {appData.courses.length} | 
-              Filtered Courses: {courses.length}
-            </p>
-          </div>
-          
           {courses.length === 0 ? (
             <Card>
               <div className="text-center py-8">
@@ -149,12 +140,70 @@ const Courses = () => {
                 <p className="text-gray-500">
                   Courses for your selected subjects will appear here once they're created.
                 </p>
-                <p className="text-sm text-gray-400 mt-2">
-                  Your subjects: {student.subjects.join(', ')}
-                </p>
               </div>
             </Card>
+          ) : isYoungStudent ? (
+            // Gamified course cards for young students
+            <div className="grid grid-cols-1 gap-4 md:gap-6">
+              {courses.map((course, index) => {
+                const chapters = appData.chapters.filter(ch => course.chapters.includes(ch.id));
+                const totalTopics = chapters.reduce((sum, ch) => sum + ch.topics.length, 0);
+                const completedTopics = student.completedTopics.length;
+                const progress = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
+
+                const colors = [
+                  { bg: 'from-pink-200 to-purple-200', border: 'border-pink-400', button: 'bg-pink-400 hover:bg-pink-500', emoji: '🎨' },
+                  { bg: 'from-blue-200 to-cyan-200', border: 'border-blue-400', button: 'bg-blue-400 hover:bg-blue-500', emoji: '🔢' },
+                  { bg: 'from-green-200 to-yellow-200', border: 'border-green-400', button: 'bg-green-400 hover:bg-green-500', emoji: '🌍' },
+                  { bg: 'from-orange-200 to-red-200', border: 'border-orange-400', button: 'bg-orange-400 hover:bg-orange-500', emoji: '🔬' },
+                ];
+                const color = colors[index % colors.length];
+
+                return (
+                  <div key={course.id} className={`bg-gradient-to-br ${color.bg} rounded-3xl p-5 md:p-6 border-4 ${color.border} shadow-xl transform hover:scale-102 transition-all cursor-pointer`}
+                    onClick={() => setSelectedCourse(course)}>
+                    <div className="flex items-center gap-3 md:gap-4 mb-4">
+                      <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-2xl flex items-center justify-center text-4xl md:text-5xl shadow-lg">
+                        {color.emoji}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900">{course.name}</h3>
+                        <p className="text-sm md:text-base text-gray-700 font-semibold">{chapters.length} Adventures</p>
+                      </div>
+                    </div>
+                    
+                    {/* Progress bar */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm md:text-base font-bold text-gray-700">Progress</span>
+                        <span className="text-sm md:text-base font-bold text-gray-700">{Math.round(progress)}%</span>
+                      </div>
+                      <div className="w-full bg-white rounded-full h-5 md:h-6 border-2 border-gray-300 shadow-inner">
+                        <div className={`h-full rounded-full bg-gradient-to-r ${color.button} transition-all duration-500`} style={{ width: `${progress}%` }}></div>
+                      </div>
+                    </div>
+
+                    {/* Stars earned */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl md:text-3xl">⭐</span>
+                        <span className="text-base md:text-lg font-bold text-gray-900">{completedTopics * 10} Stars</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl md:text-3xl">🏆</span>
+                        <span className="text-base md:text-lg font-bold text-gray-900">{completedTopics}/{totalTopics}</span>
+                      </div>
+                    </div>
+
+                    <button className={`w-full ${color.button} text-white text-base md:text-lg font-bold py-3 md:py-4 rounded-2xl transition-all transform hover:scale-105 shadow-lg`}>
+                      Start Adventure! 🚀
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
+            // Regular course cards for older students
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {courses.map((course) => {
                 const chapters = appData.chapters.filter(ch => course.chapters.includes(ch.id));
@@ -186,67 +235,137 @@ const Courses = () => {
       ) : (
         <div>
           <Button variant="secondary" onClick={() => setSelectedCourse(null)} className="mb-4">
-            ← Back to Courses
+            ← Back to {isYoungStudent ? 'Adventures' : 'Courses'}
           </Button>
 
-          <Card>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">{selectedCourse.name}</h2>
-            
-            {appData.chapters
-              .filter(ch => selectedCourse.chapters.includes(ch.id))
-              .sort((a, b) => a.order - b.order)
-              .map((chapter, chapterIndex) => {
-                const topics = appData.topics.filter(t => chapter.topics.includes(t.id));
-                
-                return (
-                  <div key={chapter.id} className="mb-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                      Chapter {chapter.order}: {chapter.name}
-                    </h3>
-                    
-                    <div className="space-y-2">
-                      {topics.map((topic, topicIndex) => {
-                        const isCompleted = student.completedTopics.includes(topic.name.toLowerCase());
-                        const isLocked = chapterIndex > 0 && topicIndex > 0 && !isCompleted;
+          {isYoungStudent ? (
+            // Gamified chapter view for young students
+            <div className="space-y-4 md:space-y-6">
+              <div className="text-center bg-gradient-to-r from-purple-100 to-pink-100 rounded-3xl p-4 md:p-6 border-4 border-purple-300">
+                <div className="text-5xl md:text-6xl mb-2">🗺️</div>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{selectedCourse.name}</h2>
+                <p className="text-base md:text-lg text-purple-600 font-semibold mt-1">Your Learning Map</p>
+              </div>
 
-                        return (
-                          <div
-                            key={topic.id}
-                            onClick={() => !isLocked && handleTopicClick(topic)}
-                            className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
-                              isLocked
-                                ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
-                                : isCompleted
-                                ? 'border-green-200 bg-green-50 cursor-pointer hover:border-green-300'
-                                : 'border-blue-200 bg-blue-50 cursor-pointer hover:border-blue-300'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              {isLocked ? (
-                                <Lock className="w-5 h-5 text-gray-400" />
-                              ) : isCompleted ? (
-                                <CheckCircle className="w-5 h-5 text-green-600" />
-                              ) : (
-                                <Play className="w-5 h-5 text-blue-600" />
-                              )}
-                              <div>
-                                <p className="font-medium text-gray-900">{topic.name}</p>
-                                <p className="text-sm text-gray-500">{topic.difficulty} • {topic.xpReward} XP</p>
+              {appData.chapters
+                .filter(ch => selectedCourse.chapters.includes(ch.id))
+                .sort((a, b) => a.order - b.order)
+                .map((chapter, chapterIndex) => {
+                  const topics = appData.topics.filter(t => chapter.topics.includes(t.id));
+                  const chapterColors = [
+                    { bg: 'from-pink-100 to-purple-100', border: 'border-pink-300', icon: '🎯' },
+                    { bg: 'from-blue-100 to-cyan-100', border: 'border-blue-300', icon: '🌟' },
+                    { bg: 'from-green-100 to-yellow-100', border: 'border-green-300', icon: '🏆' },
+                  ];
+                  const color = chapterColors[chapterIndex % chapterColors.length];
+
+                  return (
+                    <div key={chapter.id} className={`bg-gradient-to-br ${color.bg} rounded-3xl p-4 md:p-6 border-4 ${color.border} shadow-lg`}>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="text-4xl md:text-5xl">{color.icon}</div>
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+                          Level {chapter.order}: {chapter.name}
+                        </h3>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {topics.map((topic, topicIndex) => {
+                          const isCompleted = student.completedTopics.includes(topic.name.toLowerCase());
+                          const isLocked = chapterIndex > 0 && topicIndex > 0 && !isCompleted;
+
+                          return (
+                            <div
+                              key={topic.id}
+                              onClick={() => !isLocked && handleTopicClick(topic)}
+                              className={`flex items-center gap-3 md:gap-4 p-4 md:p-5 rounded-2xl border-4 transition-all transform hover:scale-102 ${
+                                isLocked
+                                  ? 'bg-gray-200 border-gray-300 cursor-not-allowed opacity-60'
+                                  : isCompleted
+                                  ? 'bg-green-200 border-green-400 cursor-pointer'
+                                  : 'bg-white border-yellow-400 cursor-pointer hover:shadow-lg'
+                              }`}
+                            >
+                              <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-2xl md:text-3xl ${
+                                isLocked ? 'bg-gray-300' : isCompleted ? 'bg-green-400' : 'bg-yellow-400'
+                              }`}>
+                                {isLocked ? '🔒' : isCompleted ? '✅' : '⭐'}
                               </div>
+                              <div className="flex-1">
+                                <p className="text-base md:text-lg font-bold text-gray-900">{topic.name}</p>
+                                <p className="text-sm md:text-base font-semibold text-yellow-600">+{topic.xpReward} Stars</p>
+                              </div>
+                              {isCompleted && (
+                                <div className="text-3xl md:text-4xl">🏆</div>
+                              )}
                             </div>
-                            {isCompleted && (
-                              <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-full">
-                                Completed
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-          </Card>
+                  );
+                })}
+            </div>
+          ) : (
+            // Regular chapter view for older students
+            <Card>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">{selectedCourse.name}</h2>
+              
+              {appData.chapters
+                .filter(ch => selectedCourse.chapters.includes(ch.id))
+                .sort((a, b) => a.order - b.order)
+                .map((chapter, chapterIndex) => {
+                  const topics = appData.topics.filter(t => chapter.topics.includes(t.id));
+                  
+                  return (
+                    <div key={chapter.id} className="mb-6">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                        Chapter {chapter.order}: {chapter.name}
+                      </h3>
+                      
+                      <div className="space-y-2">
+                        {topics.map((topic, topicIndex) => {
+                          const isCompleted = student.completedTopics.includes(topic.name.toLowerCase());
+                          const isLocked = chapterIndex > 0 && topicIndex > 0 && !isCompleted;
+
+                          return (
+                            <div
+                              key={topic.id}
+                              onClick={() => !isLocked && handleTopicClick(topic)}
+                              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
+                                isLocked
+                                  ? 'border-gray-200 bg-gray-50 cursor-not-allowed'
+                                  : isCompleted
+                                  ? 'border-green-200 bg-green-50 cursor-pointer hover:border-green-300'
+                                  : 'border-blue-200 bg-blue-50 cursor-pointer hover:border-blue-300'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                {isLocked ? (
+                                  <Lock className="w-5 h-5 text-gray-400" />
+                                ) : isCompleted ? (
+                                  <CheckCircle className="w-5 h-5 text-green-600" />
+                                ) : (
+                                  <Play className="w-5 h-5 text-blue-600" />
+                                )}
+                                <div>
+                                  <p className="font-medium text-gray-900">{topic.name}</p>
+                                  <p className="text-sm text-gray-500">{topic.difficulty} • {topic.xpReward} XP</p>
+                                </div>
+                              </div>
+                              {isCompleted && (
+                                <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-full">
+                                  Completed
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+            </Card>
+          )}
         </div>
       )}
 
