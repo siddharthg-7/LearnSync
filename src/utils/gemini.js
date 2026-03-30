@@ -5,20 +5,24 @@ const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export const callGemini = async (prompt) => {
+  if (!API_KEY) {
+    console.warn('[Gemini] No API key provided via VITE_GEMINI_API_KEY.');
+  }
   try {
     // Use Gemini 2.5 Flash model
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    const text = await response.text();
 
     return {
       success: true,
       data: text
     };
   } catch (error) {
-    console.error('Gemini API Error:', error);
+    console.error('[Gemini] API Error:', error);
+    console.error('[Gemini] Request prompt:', prompt);
     
     // Fallback to mock responses if API fails
     return getMockResponse(prompt);
