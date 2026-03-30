@@ -2,75 +2,89 @@ import { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { Brain, BookOpen, Award } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  CheckCircle2, BookOpen, Star, Briefcase, GraduationCap, ChevronRight, ChevronLeft, Award, User
+} from 'lucide-react';
 
 const MentorOnboarding = ({ onComplete }) => {
-  const { addMentor, appData } = useApp();
+  const { addMentor } = useApp();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
+    age: '',
     education: '',
     subjects: [],
-    teachingCapacity: 5,
-    experience: 0,
-    achievements: '',
-    quizAnswers: {}
+    selfRating: {},
+    hasExperience: false,
+    experienceValue: '',
+    testAnswers: {}
   });
 
-  const subjects = ['Math', 'Science', 'English', 'Physics', 'Chemistry', 'Biology', 'Social Studies'];
+  const subjectCategories = [
+    { 
+      category: 'Core Subjects', 
+      subjects: ['Mathematics', 'English', 'Science', 'EVS'],
+      color: 'blue'
+    },
+    { 
+      category: 'Support Subjects', 
+      subjects: ['General Knowledge', 'Reading & Comprehension', 'Writing Skills', 'Spoken English'],
+      color: 'purple'
+    },
+    { 
+      category: 'Skill Subjects', 
+      subjects: ['Logical Reasoning', 'Communication Skills', 'Storytelling'],
+      color: 'emerald'
+    }
+  ];
 
-  // 8-Question Assessment Quiz
-  const generateQuizQuestions = (subject) => {
-    return [
-      {
-        id: 1,
-        question: `How would you explain ${subject} concepts to beginners?`,
-        options: ['Use simple examples', 'Start with theory', 'Use visual aids', 'All of the above'],
-        correct: 3
-      },
-      {
-        id: 2,
-        question: `What is your approach to handling student doubts in ${subject}?`,
-        options: ['Give direct answers', 'Guide them to find answers', 'Provide examples', 'Encourage peer learning'],
-        correct: 1
-      },
-      {
-        id: 3,
-        question: `How do you assess student understanding in ${subject}?`,
-        options: ['Only tests', 'Continuous observation', 'Projects', 'All methods'],
-        correct: 3
-      },
-      {
-        id: 4,
-        question: `What teaching method works best for ${subject}?`,
-        options: ['Lecture', 'Interactive', 'Practical', 'Mixed approach'],
-        correct: 3
-      },
-      {
-        id: 5,
-        question: `How do you handle students struggling with ${subject}?`,
-        options: ['Extra classes', 'Simplified content', 'One-on-one attention', 'All approaches'],
-        correct: 3
-      },
-      {
-        id: 6,
-        question: `What resources do you use for teaching ${subject}?`,
-        options: ['Textbooks only', 'Online resources', 'Real-world examples', 'Multiple resources'],
-        correct: 3
-      },
-      {
-        id: 7,
-        question: `How do you keep students engaged in ${subject}?`,
-        options: ['Stories', 'Games', 'Challenges', 'All methods'],
-        correct: 3
-      },
-      {
-        id: 8,
-        question: `How do you measure your teaching effectiveness in ${subject}?`,
-        options: ['Test scores', 'Student feedback', 'Progress tracking', 'All metrics'],
-        correct: 3
-      }
-    ];
+  // Simple MCQ Database per subject
+  const mcqDatabase = {
+    'Mathematics': [
+      { id: 1, question: "What is 12 × 3?", options: ["36", "24", "30"], correct: 0 },
+      { id: 2, question: "What is the square root of 64?", options: ["6", "8", "10"], correct: 1 }
+    ],
+    'English': [
+      { id: 1, question: "Which is a synonym for 'happy'?", options: ["Sad", "Joyful", "Angry"], correct: 1 },
+      { id: 2, question: "Identify the verb: 'The dog barked loudly.'", options: ["dog", "loudly", "barked"], correct: 2 }
+    ],
+    'Science': [
+      { id: 1, question: "What gas do plants absorb from the atmosphere?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen"], correct: 1 },
+      { id: 2, question: "What is the boiling point of water?", options: ["50°C", "100°C", "150°C"], correct: 1 }
+    ],
+    'EVS': [
+      { id: 1, question: "Which of these is a renewable resource?", options: ["Coal", "Solar Energy", "Petroleum"], correct: 1 },
+      { id: 2, question: "Which layer of the atmosphere protects us from UV rays?", options: ["Troposphere", "Ozone Layer", "Mesosphere"], correct: 1 }
+    ],
+    'General Knowledge': [
+      { id: 1, question: "Which is the largest continent?", options: ["Africa", "Asia", "Europe"], correct: 1 },
+      { id: 2, question: "Who painted the Mona Lisa?", options: ["Van Gogh", "Da Vinci", "Picasso"], correct: 1 }
+    ],
+    'Reading & Comprehension': [
+      { id: 1, question: "What is the main idea of a passage?", options: ["The setting", "The core message", "The author's name"], correct: 1 },
+      { id: 2, question: "What does 'inference' mean?", options: ["A direct quote", "An educated guess based on text", "A spelling error"], correct: 1 }
+    ],
+    'Writing Skills': [
+      { id: 1, question: "Which punctuation mark ends a question?", options: ["Period", "Comma", "Question Mark"], correct: 2 },
+      { id: 2, question: "What is a thesis statement?", options: ["Main argument", "Conclusion", "Title"], correct: 0 }
+    ],
+    'Spoken English': [
+      { id: 1, question: "Which of these is a formal greeting?", options: ["Hey bro", "Good morning", "What's up"], correct: 1 },
+      { id: 2, question: "What is proper intonation?", options: ["Speaking very loudly", "Pitch variation when speaking", "Speaking fast"], correct: 1 }
+    ],
+    'Logical Reasoning': [
+      { id: 1, question: "If A > B and B > C, then:", options: ["A < C", "C > A", "A > C"], correct: 2 },
+      { id: 2, question: "Find the odd one out: Apple, Banana, Carrot, Orange", options: ["Apple", "Carrot", "Orange"], correct: 1 }
+    ],
+    'Communication Skills': [
+      { id: 1, question: "Active listening involves:", options: ["Interrupting", "Paying full attention", "Looking away"], correct: 1 },
+      { id: 2, question: "What is non-verbal communication?", options: ["Emails", "Body language", "Phone calls"], correct: 1 }
+    ],
+    'Storytelling': [
+      { id: 1, question: "What is the climax of a story?", options: ["The beginning", "The turning point", "The ending"], correct: 1 },
+      { id: 2, question: "Who is the protagonist?", options: ["The villain", "The main character", "The author"], correct: 1 }
+    ]
   };
 
   const handleSubjectToggle = (subject) => {
@@ -82,281 +96,466 @@ const MentorOnboarding = ({ onComplete }) => {
     }));
   };
 
-  const handleQuizAnswer = (subject, questionId, answerIndex) => {
+  const handleRating = (subject, rating) => {
     setFormData(prev => ({
       ...prev,
-      quizAnswers: {
-        ...prev.quizAnswers,
-        [subject]: {
-          ...prev.quizAnswers[subject],
-          [questionId]: answerIndex
-        }
+      selfRating: { ...prev.selfRating, [subject]: rating }
+    }));
+  };
+
+  const handleTestAnswer = (subject, questionId, selectedOptionIdx) => {
+    setFormData(prev => ({
+      ...prev,
+      testAnswers: {
+        ...prev.testAnswers,
+        [`${subject}-${questionId}`]: selectedOptionIdx
       }
     }));
   };
 
-  const calculateSkillLevel = () => {
-    let totalScore = 0;
+  // Logic calculation for final screen
+  const calculateResult = () => {
+    // 1. Calculate Test Score Percentage
+    let correctAnswers = 0;
     let totalQuestions = 0;
 
-    formData.subjects.forEach(subject => {
-      const questions = generateQuizQuestions(subject);
-      const answers = formData.quizAnswers[subject] || {};
-      
-      questions.forEach(q => {
-        if (answers[q.id] !== undefined) {
-          totalQuestions++;
-          if (answers[q.id] === q.correct) {
-            totalScore++;
-          }
+    formData.subjects.forEach(sub => {
+      const qs = mcqDatabase[sub] || [];
+      qs.forEach(q => {
+        totalQuestions++;
+        const answerKey = `${sub}-${q.id}`;
+        if (formData.testAnswers[answerKey] === q.correct) {
+          correctAnswers++;
         }
       });
     });
 
-    const percentage = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
-    
-    if (percentage >= 75) return 'advanced';
-    if (percentage >= 50) return 'intermediate';
-    return 'beginner';
+    const testScore = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+
+    // 2. Average Self Rating
+    let totalRating = 0;
+    formData.subjects.forEach(sub => {
+      totalRating += formData.selfRating[sub] || 3;
+    });
+    const avgRating = formData.subjects.length > 0 ? (totalRating / formData.subjects.length) : 0; // out of 5
+
+    // 3. Optional: factor experience. For now, experience gives a slight bump.
+    const hasExp = formData.hasExperience;
+
+    // Final Metric out of 100 roughly combining rating and test score.
+    // E.g., Test Score is 70% weight, Rating is 30% weight
+    const ratingScore = (avgRating / 5) * 100;
+    let finalMetric = (0.7 * testScore) + (0.3 * ratingScore);
+    if (hasExp) finalMetric += 5; // experience bump
+
+    let level = 'Beginner';
+    let classRange = 'Class 1-5';
+
+    if (finalMetric > 80) {
+      level = 'Advanced';
+      classRange = 'Class 9-12';
+    } else if (finalMetric > 50) {
+      level = 'Intermediate';
+      classRange = 'Class 6-8';
+    }
+
+    return { testScore: Math.round(testScore), finalMetric, level, classRange };
   };
 
-  const handleSubmit = () => {
-    const skillLevel = calculateSkillLevel();
-    
-    // Calculate ratings per subject
-    const ratings = {};
-    formData.subjects.forEach(subject => {
-      const questions = generateQuizQuestions(subject);
-      const answers = formData.quizAnswers[subject] || {};
-      const correctAnswers = questions.filter(q => answers[q.id] === q.correct).length;
-      ratings[subject] = Math.round((correctAnswers / questions.length) * 5);
-    });
+  const finishOnboarding = () => {
+    const { level, classRange, finalMetric } = calculateResult();
 
     const newMentor = {
       ...formData,
-      skillLevel,
-      ratings,
-      teachingExperience: formData.experience > 0,
-      availability: [],
+      id: Date.now(),
+      level,
+      classRange,
+      skillScore: Math.round(finalMetric),
+      onboarded: true,
+      teachingCapacity: 5,
       assignedStudents: [],
-      sessionsCompleted: 0,
-      avgImprovement: 0,
-      onboarded: true
+      sessionsCompleted: 0
     };
 
-    const mentorId = Date.now();
-    const mentorWithId = { ...newMentor, id: mentorId };
-
-    addMentor(mentorWithId);
-    onComplete(mentorWithId);
+    addMentor(newMentor);
+    onComplete(newMentor);
   };
 
   const canProceed = () => {
-    if (step === 1) return formData.name && formData.education;
-    if (step === 2) return formData.teachingCapacity > 0;
-    if (step === 3) return formData.subjects.length > 0;
-    if (step === 4) {
-      return formData.subjects.every(subject => {
-        const questions = generateQuizQuestions(subject);
-        const answers = formData.quizAnswers[subject] || {};
-        return questions.every(q => answers[q.id] !== undefined);
+    if (step === 1) return formData.name.trim() !== '' && formData.age !== '' && formData.education.trim() !== '';
+    if (step === 2) return formData.subjects.length > 0;
+    if (step === 3) return formData.subjects.every(s => formData.selfRating[s]);
+    if (step === 4) return !formData.hasExperience || formData.experienceValue.trim() !== '';
+    if (step === 5) {
+      // Must answer all questions 
+      let allAnswered = true;
+      formData.subjects.forEach(sub => {
+        const qs = mcqDatabase[sub] || [];
+        qs.forEach(q => {
+          if (formData.testAnswers[`${sub}-${q.id}`] === undefined) {
+             allAnswered = false;
+          }
+        });
       });
+      return allAnswered;
     }
     return true;
   };
 
+  const stepTitles = [
+    "Basic Information",
+    "Subject Selection",
+    "Self-Rating",
+    "Teaching Experience",
+    "Assessment Test",
+    "Your Results!"
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <Card>
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-semibold text-gray-900">Mentor Onboarding</h2>
-            <span className="text-gray-500">Step {step} of 4</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
-              style={{ width: `${(step / 4) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Step 1: Basic Information */}
-        {step === 1 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
-            <div>
-              <label className="block text-gray-700 mb-2">Full Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your full name"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-2">Education</label>
-              <input
-                type="text"
-                value={formData.education}
-                onChange={(e) => setFormData({ ...formData, education: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., M.Sc Mathematics, B.Ed"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Teaching Capacity & Experience */}
-        {step === 2 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Teaching Capacity</h3>
-            <div>
-              <label className="block text-gray-700 mb-2">
-                How many students can you handle? {formData.teachingCapacity}
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="20"
-                value={formData.teachingCapacity}
-                onChange={(e) => setFormData({ ...formData, teachingCapacity: parseInt(e.target.value) })}
-                className="w-full"
-              />
-              <div className="flex justify-between text-sm text-gray-500">
-                <span>1</span>
-                <span>20</span>
-              </div>
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-2">Years of Teaching Experience</label>
-              <input
-                type="number"
-                value={formData.experience}
-                onChange={(e) => setFormData({ ...formData, experience: parseInt(e.target.value) })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="0"
-                min="0"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-2">Achievements or Certifications (Optional)</label>
-              <textarea
-                value={formData.achievements}
-                onChange={(e) => setFormData({ ...formData, achievements: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
-                placeholder="List any relevant achievements, certifications, or awards..."
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Subject Selection */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Subjects You Can Teach</h3>
-            <p className="text-gray-600 text-sm">Select all subjects you're comfortable teaching</p>
-            <div className="grid grid-cols-2 gap-3">
-              {subjects.map(subject => (
-                <button
-                  key={subject}
-                  onClick={() => handleSubjectToggle(subject)}
-                  className={`p-4 rounded-xl border-2 transition-all text-left ${
-                    formData.subjects.includes(subject)
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <BookOpen className={`w-5 h-5 mb-2 ${
-                    formData.subjects.includes(subject) ? 'text-blue-600' : 'text-gray-400'
-                  }`} />
-                  <p className={`font-medium ${
-                    formData.subjects.includes(subject) ? 'text-blue-900' : 'text-gray-900'
-                  }`}>
-                    {subject}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Step 4: Skill Assessment Quiz */}
-        {step === 4 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 mb-4">
-              <Brain className="w-6 h-6 text-purple-600" />
+    <div className="min-h-[calc(100vh-80px)] bg-gray-50 flex items-center justify-center p-4 py-8">
+      <div className="max-w-4xl w-full">
+        <Card className="shadow-xl shadow-blue-900/5 border-0 bg-white rounded-3xl overflow-hidden">
+          
+          {/* Header & Progress Bar */}
+          <div className="bg-gradient-to-r from-slate-50 to-blue-50 border-b border-gray-100 p-8 pb-6">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Skill Assessment</h3>
-                <p className="text-gray-600 text-sm">Answer questions to determine your teaching level</p>
+                <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Mentor Application</h1>
+                <p className="text-gray-500 font-medium">Step {step} of 6: {stepTitles[step-1]}</p>
+              </div>
+              <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm border border-gray-100 font-bold text-xl">
+                {step}/6
               </div>
             </div>
-            
-            {formData.subjects.map((subject) => (
-              <div key={subject} className="space-y-4">
-                <h4 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
-                  <Award className="w-5 h-5 text-blue-600" />
-                  {subject}
-                </h4>
-                {generateQuizQuestions(subject).map((q, index) => (
-                  <div key={q.id} className="p-4 bg-gray-50 rounded-xl">
-                    <p className="font-medium text-gray-900 mb-3">
-                      {index + 1}. {q.question}
-                    </p>
+            {/* Progress line */}
+            <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-blue-600 rounded-full"
+                initial={{ width: \`\${((step-1) / 6) * 100}%\` }}
+                animate={{ width: \`\${(step / 6) * 100}%\` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          </div>
+
+          <div className="p-8 min-h-[400px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* STEP 1: Basic Info */}
+                {step === 1 && (
+                  <div className="space-y-6 max-w-2xl">
                     <div className="space-y-2">
-                      {q.options.map((option, optIndex) => (
-                        <label
-                          key={optIndex}
-                          className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                            formData.quizAnswers[subject]?.[q.id] === optIndex
-                              ? 'border-blue-500 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name={`${subject}-${q.id}`}
-                            checked={formData.quizAnswers[subject]?.[q.id] === optIndex}
-                            onChange={() => handleQuizAnswer(subject, q.id, optIndex)}
-                            className="w-4 h-4"
-                          />
-                          <span className="text-gray-700">{option}</span>
-                        </label>
+                      <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Full Name</label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-blue-500"
+                          placeholder="John Doe"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Age</label>
+                      <input
+                        type="number"
+                        value={formData.age}
+                        onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                        className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-blue-500"
+                        placeholder="e.g. 24"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Highest Education Level</label>
+                      <div className="relative">
+                        <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                          type="text"
+                          value={formData.education}
+                          onChange={(e) => setFormData({ ...formData, education: e.target.value })}
+                          className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-blue-500"
+                          placeholder="e.g. M.Sc Mathematics, B.Ed"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 2: Subject Selection */}
+                {step === 2 && (
+                  <div className="space-y-8">
+                    {subjectCategories.map((group, idx) => (
+                      <div key={idx}>
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100">{group.category}</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {group.subjects.map(subject => {
+                            const isSelected = formData.subjects.includes(subject);
+                            return (
+                              <label
+                                key={subject}
+                                className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                                  isSelected 
+                                    ? \`border-\${group.color}-500 bg-\${group.color}-50\` 
+                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => handleSubjectToggle(subject)}
+                                  className={`w-5 h-5 text-\${group.color}-600 rounded focus:ring-\${group.color}-500`}
+                                />
+                                <span className={`font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>
+                                  {subject}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* STEP 3: Self Rating */}
+                {step === 3 && (
+                  <div className="space-y-6">
+                    <p className="text-gray-500 mb-6">Rate your proficiency in the subjects you selected (1 = Beginner, 5 = Expert).</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                      {formData.subjects.map(subject => (
+                        <div key={subject} className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <span className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                            <BookOpen className="w-5 h-5 text-blue-500" />
+                            {subject}
+                          </span>
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map(star => {
+                              const active = (formData.selfRating[subject] || 0) >= star;
+                              return (
+                                <button
+                                  key={star}
+                                  onClick={() => handleRating(subject, star)}
+                                  className="p-1 transition-all hover:scale-110"
+                                >
+                                  <Star className={`w-8 h-8 ${active ? 'fill-yellow-400 text-yellow-400 drop-shadow-sm' : 'fill-gray-100 text-gray-300'}`} />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
+                )}
 
-        <div className="flex justify-between mt-6">
-          {step > 1 && (
-            <Button variant="secondary" onClick={() => setStep(step - 1)}>
-              Back
-            </Button>
-          )}
-          {step < 4 ? (
-            <Button 
-              onClick={() => setStep(step + 1)} 
-              className="ml-auto"
-              disabled={!canProceed()}
-            >
-              Next
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleSubmit} 
-              className="ml-auto"
-              disabled={!canProceed()}
-            >
-              Complete Setup
-            </Button>
-          )}
-        </div>
-      </Card>
+                {/* STEP 4: Experience */}
+                {step === 4 && (
+                  <div className="space-y-8 max-w-2xl">
+                    <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                      <label className="flex items-center gap-4 cursor-pointer">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={formData.hasExperience}
+                            onChange={(e) => setFormData({ ...formData, hasExperience: e.target.checked })}
+                            className="sr-only"
+                          />
+                          <div className={`block w-14 h-8 rounded-full transition-colors ${formData.hasExperience ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                          <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.hasExperience ? 'translate-x-6' : ''}`}></div>
+                        </div>
+                        <span className="text-xl font-bold text-gray-800">Have you taught before?</span>
+                      </label>
+                    </div>
+
+                    <AnimatePresence>
+                      {formData.hasExperience && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="space-y-3 overflow-hidden"
+                        >
+                          <label className="text-sm font-bold text-gray-700 uppercase tracking-wide">Enter Total Experience</label>
+                          <div className="relative">
+                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <input
+                              type="text"
+                              value={formData.experienceValue}
+                              onChange={(e) => setFormData({ ...formData, experienceValue: e.target.value })}
+                              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 placeholder-gray-400"
+                              placeholder="e.g. 2 years or 6 months"
+                            />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
+
+                {/* STEP 5: Assessment */}
+                {step === 5 && (
+                  <div className="space-y-10">
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center gap-3">
+                       <Award className="w-6 h-6 text-blue-600 shrink-0" />
+                       <p className="text-blue-900 font-medium">Please answer these basic questions to complete your subject verification.</p>
+                    </div>
+
+                    {formData.subjects.map(subject => {
+                      const questions = mcqDatabase[subject] || [];
+                      return (
+                        <div key={subject} className="space-y-6 pb-6 border-b border-gray-100 last:border-0">
+                          <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                             {subject}
+                          </h3>
+                          {questions.length === 0 && <p className="text-gray-500 italic">No assessment needed for this subject.</p>}
+                          
+                          {questions.map((q, idx) => (
+                            <div key={q.id} className="bg-white border-2 border-gray-100 p-6 rounded-2xl shadow-sm">
+                              <p className="font-bold text-lg text-gray-800 mb-4">{idx + 1}. {q.question}</p>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                {q.options.map((opt, optIdx) => {
+                                  const isSelected = formData.testAnswers[`${subject}-${q.id}`] === optIdx;
+                                  return (
+                                    <button
+                                      key={optIdx}
+                                      onClick={() => handleTestAnswer(subject, q.id, optIdx)}
+                                      className={`p-3 text-left rounded-xl font-medium border-2 transition-all ${
+                                        isSelected 
+                                          ? 'border-blue-500 bg-blue-50 text-blue-800' 
+                                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600'
+                                      }`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* STEP 6: Result Classification */}
+                {step === 6 && (
+                  <div className="py-8">
+                    {(() => {
+                      const result = calculateResult();
+                      return (
+                        <div className="max-w-xl mx-auto text-center space-y-6">
+                          <div className={`mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-xl ${
+                              result.level === 'Advanced' ? 'bg-gradient-to-br from-emerald-400 to-green-600 shadow-green-500/30' :
+                              result.level === 'Intermediate' ? 'bg-gradient-to-br from-blue-400 to-indigo-600 shadow-blue-500/30' :
+                              'bg-gradient-to-br from-amber-400 to-orange-500 shadow-orange-500/30'
+                            }`}
+                          >
+                            <Award className="w-12 h-12 text-white" />
+                          </div>
+                          
+                          <h2 className="text-4xl font-extrabold text-gray-900">You are an <br/><span className={
+                              result.level === 'Advanced' ? 'text-green-600' :
+                              result.level === 'Intermediate' ? 'text-blue-600' : 'text-orange-500'
+                            }>{result.level}</span> Mentor</h2>
+                          
+                          <p className="text-xl text-gray-600 mt-2">
+                            Assessment Score: <span className="font-bold text-gray-900">{result.testScore}%</span>
+                          </p>
+
+                          <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 text-left mt-8 space-y-4">
+                            <div>
+                              <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Approved to Teach</p>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {formData.subjects.map(s => (
+                                  <span key={s} className="px-3 py-1 bg-white border border-gray-200 rounded-lg font-semibold text-gray-700">{s}</span>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                               <p className="text-sm font-bold text-gray-500 uppercase tracking-wide">Recommended Range</p>
+                               <span className="inline-block mt-1 text-lg font-bold text-gray-900">{result.classRange}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <div className="p-6 px-8 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+            {step > 1 && step < 6 ? (
+              <button 
+                onClick={() => setStep(step - 1)}
+                className="flex items-center gap-2 px-6 py-3 font-bold text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" /> Back
+              </button>
+            ) : <div></div>}
+
+            {step < 5 && (
+              <button
+                disabled={!canProceed()}
+                onClick={() => setStep(step + 1)}
+                className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all ${
+                  canProceed() 
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20' 
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Continue <ChevronRight className="w-5 h-5" />
+              </button>
+            )}
+
+            {step === 5 && (
+              <button
+                disabled={!canProceed()}
+                onClick={() => setStep(step + 1)}
+                className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all ${
+                  canProceed() 
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20' 
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Submit Assessment <CheckCircle2 className="w-5 h-5 mx-1" />
+              </button>
+            )}
+
+            {step === 6 && (
+               <button
+                 onClick={finishOnboarding}
+                 className="w-full sm:w-auto flex justify-center items-center gap-2 px-10 py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-xl shadow-gray-900/10 text-lg"
+               >
+                 Go to Dashboard <ChevronRight className="w-6 h-6" />
+               </button>
+            )}
+          </div>
+
+        </Card>
+      </div>
+      
+      <style dangerouslySetInnerHTML={{__html: \`
+        /* Removing arrows from number input */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          margin: 0; 
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+      \`}} />
     </div>
   );
 };
