@@ -149,7 +149,7 @@ const LoginAuth = ({ onLogin }) => {
       } else {
         setError(result.error);
       }
-    } catch (err) {
+    } catch {
       setError('Mock user login failed. Please create this account first.');
     } finally {
       setLoading(false);

@@ -43,7 +43,8 @@ const Layout = ({ children, onLogout }) => {
       { name: 'Students', icon: Users, path: '/mentor/students' },
       { name: 'Content', icon: BookOpen, path: '/mentor/content' },
       { name: 'Sessions', icon: Calendar, path: '/mentor/sessions' },
-      { name: 'Doubts', icon: HelpCircle, path: '/mentor/doubts' }
+      { name: 'Doubts', icon: HelpCircle, path: '/mentor/doubts' },
+      { name: 'Courses', icon: GraduationCap, path: '/mentor/courses' }
     ],
     admin: [
       { name: 'Dashboard', icon: Home, path: '/admin' },

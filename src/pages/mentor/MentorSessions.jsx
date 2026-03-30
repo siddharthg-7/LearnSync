@@ -1,261 +1,281 @@
-import { useState } from 'react';
-import { useApp } from '../../context/AppContext';
-import Card from '../../components/Card';
-import Button from '../../components/Button';
-import Modal from '../../components/Modal';
-import { Calendar, Plus, CheckCircle, User } from 'lucide-react';
+import { useState } from 'react'
+import { useApp } from '../../context/AppContext'
+import { Play, Square, Users, CheckCircle, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
 
-const MentorSessions = () => {
-  const { appData, currentUser, addSession } = useApp();
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    studentId: '',
-    topic: '',
-    date: new Date().toISOString().split('T')[0],
-    notes: '',
-    attendance: 'present'
-  });
-
-  const mentor = appData.mentors.find(m => m.id === currentUser?.id) || appData.mentors[0];
-  const assignedStudents = appData.students.filter(s => mentor.assignedStudents.includes(s.id));
-  const mentorSessions = appData.sessions.filter(s => s.mentorId === mentor.id);
-
-  const handleSubmit = () => {
-    if (formData.studentId && formData.topic && formData.date) {
-      addSession({
-        mentorId: mentor.id,
-        studentId: parseInt(formData.studentId),
-        topic: formData.topic,
-        date: formData.date,
-        notes: formData.notes,
-        attendance: [{
-          studentId: parseInt(formData.studentId),
-          status: formData.attendance
-        }]
-      });
-
-      setFormData({
-        studentId: '',
-        topic: '',
-        date: new Date().toISOString().split('T')[0],
-        notes: '',
-        attendance: 'present'
-      });
-      setShowModal(false);
-    }
-  };
-
-  const upcomingSessions = mentorSessions.filter(s => !s.score);
-  const completedSessions = mentorSessions.filter(s => s.score);
+function AttendanceModal({ students, attendance, onSave, onClose }) {
+  const [local, setLocal] = useState(attendance)
+  const toggle = (id) => setLocal(prev => prev.map(a => a.studentId === id ? { ...a, status: a.status === 'present' ? 'absent' : 'present' } : a))
+  const presentCount = local.filter(a => a.status === 'present').length
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Sessions</h1>
-          <p className="text-gray-500 mt-1">Log and track teaching sessions</p>
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm w-[440px] max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Take Attendance</p>
+            <p className="text-xs text-gray-400">{presentCount} of {local.length} present</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 text-lg leading-none">×</button>
         </div>
-        <Button onClick={() => setShowModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Log Session
-        </Button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-50 rounded-xl">
-              <Calendar className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-gray-900">{mentorSessions.length}</p>
-              <p className="text-gray-600 text-sm">Total Sessions</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-50 rounded-xl">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-gray-900">{completedSessions.length}</p>
-              <p className="text-gray-600 text-sm">Completed</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-yellow-50 rounded-xl">
-              <Calendar className="w-6 h-6 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-semibold text-gray-900">{upcomingSessions.length}</p>
-              <p className="text-gray-600 text-sm">Upcoming</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Recent Sessions */}
-      <Card>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Sessions</h2>
-        <div className="space-y-3">
-          {mentorSessions.slice(0, 10).map((session) => {
-            const student = appData.students.find(s => s.id === session.studentId);
-            const isCompleted = !!session.score;
-            const attendance = session.attendance?.[0]?.status || 'unknown';
-
+        <div className="px-6 py-4 space-y-2">
+          {local.map(a => {
+            const student = students.find(s => s.id === a.studentId)
+            const present = a.status === 'present'
             return (
-              <div
-                key={session.id}
-                className={`p-4 rounded-xl border-2 ${
-                  isCompleted ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      isCompleted ? 'bg-green-100' : 'bg-blue-100'
-                    }`}>
-                      {isCompleted ? (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{session.topic}</p>
-                      <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
-                        <User className="w-4 h-4" />
-                        {student?.name}
-                      </p>
-                      {session.notes && (
-                        <p className="text-sm text-gray-600 mt-2">{session.notes}</p>
-                      )}
-                    </div>
+              <button key={a.studentId} onClick={() => toggle(a.studentId)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${present ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${present ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-600'}`}>
+                    {student?.name?.[0]}
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">{session.date}</p>
-                    {isCompleted && session.score && (
-                      <p className="text-lg font-bold text-green-600 mt-1">
-                        Score: {session.score}/5
-                      </p>
-                    )}
-                    <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs ${
-                      attendance === 'present' ? 'bg-green-100 text-green-700' :
-                      attendance === 'absent' ? 'bg-red-100 text-red-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {attendance === 'present' ? 'Present' : attendance === 'absent' ? 'Absent' : 'Unknown'}
-                    </span>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-gray-900">{student?.name}</p>
+                    <p className="text-xs text-gray-400">Class {student?.class}</p>
                   </div>
                 </div>
-              </div>
-            );
+                <span className={`text-xs font-medium px-2 py-1 rounded-full ${present ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                  {present ? 'Present' : 'Absent'}
+                </span>
+              </button>
+            )
           })}
-
-          {mentorSessions.length === 0 && (
-            <div className="text-center py-12">
-              <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No sessions logged yet</p>
-            </div>
-          )}
         </div>
-      </Card>
-
-      {/* Log Session Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title="Log New Session"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-gray-700 mb-2">Student</label>
-            <select
-              value={formData.studentId}
-              onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select student</option>
-              {assignedStudents.map((student) => (
-                <option key={student.id} value={student.id}>{student.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2">Topic</label>
-            <input
-              type="text"
-              value={formData.topic}
-              onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., Fractions"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2">Date</label>
-            <input
-              type="date"
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2">Attendance</label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  value="present"
-                  checked={formData.attendance === 'present'}
-                  onChange={(e) => setFormData({ ...formData, attendance: e.target.value })}
-                  className="w-4 h-4"
-                />
-                <span className="text-gray-700">Present</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  value="absent"
-                  checked={formData.attendance === 'absent'}
-                  onChange={(e) => setFormData({ ...formData, attendance: e.target.value })}
-                  className="w-4 h-4"
-                />
-                <span className="text-gray-700">Absent</span>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-2">Notes (Optional)</label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
-              placeholder="Add any notes about the session..."
-            />
-          </div>
-
-          <Button
-            onClick={handleSubmit}
-            disabled={!formData.studentId || !formData.topic || !formData.date}
-            className="w-full"
-          >
-            Log Session
-          </Button>
+        <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-100">
+          <button onClick={onClose} className="text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button onClick={() => { onSave(local); onClose() }}
+            className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            Save Attendance
+          </button>
         </div>
-      </Modal>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default MentorSessions;
+function StartSessionModal({ onStart, onClose }) {
+  const [topic, setTopic] = useState('')
+  const [notes, setNotes] = useState('')
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm w-[440px]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <p className="text-sm font-semibold text-gray-900">Start New Session</p>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400 text-lg leading-none">×</button>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          <div>
+            <label className="text-xs font-medium text-gray-700 block mb-1">Topic</label>
+            <input type="text" placeholder="e.g. Fractions, Grammar Basics" value={topic}
+              onChange={e => setTopic(e.target.value)}
+              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-700 block mb-1">Notes (optional)</label>
+            <textarea placeholder="Any pre-session notes..." value={notes}
+              onChange={e => setNotes(e.target.value)} rows={2}
+              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+          </div>
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+            <p className="text-xs text-blue-700">The session starts immediately. Take attendance anytime during the session.</p>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 px-6 py-4 border-t border-gray-100">
+          <button onClick={onClose} className="text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button disabled={!topic.trim()} onClick={() => onStart({ topic, notes })}
+            className="flex items-center gap-2 text-sm px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-40 transition-colors">
+            <Play size={13} /> Start Session
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const MentorSessions = () => {
+  const { appData, currentUser, addSession } = useApp()
+  const mentor = appData.mentors.find(m => m.id === currentUser?.id) || appData.mentors[0]
+  const assignedStudents = appData.students.filter(s => mentor.assignedStudents.includes(s.id))
+  const mentorSessions = appData.sessions.filter(s => s.mentorId === mentor.id)
+
+  const [liveSession, setLiveSession] = useState(null)
+  const [showStart, setShowStart] = useState(false)
+  const [showAttendance, setShowAttendance] = useState(false)
+  const [sortKey, setSortKey] = useState('date')
+  const [sortDir, setSortDir] = useState('desc')
+
+  const handleStart = ({ topic, notes }) => {
+    setLiveSession({
+      topic, notes,
+      attendance: assignedStudents.map(s => ({ studentId: s.id, status: 'present' }))
+    })
+    setShowStart(false)
+  }
+
+  const handleEndSession = () => {
+    if (!liveSession) return
+    addSession({
+      mentorId: mentor.id,
+      studentId: liveSession.attendance[0]?.studentId || null,
+      topic: liveSession.topic,
+      date: new Date().toISOString().split('T')[0],
+      notes: liveSession.notes,
+      attendance: liveSession.attendance,
+    })
+    setLiveSession(null)
+  }
+
+  const handleSort = (key) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir('desc') }
+  }
+
+  const SortIcon = ({ col }) => {
+    if (sortKey !== col) return <ChevronUp size={12} className="text-gray-300" />
+    return sortDir === 'asc' ? <ChevronUp size={12} className="text-blue-500" /> : <ChevronDown size={12} className="text-blue-500" />
+  }
+
+  const sorted = [...mentorSessions].sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1
+    if (sortKey === 'date') return ((a.date || '') > (b.date || '') ? 1 : -1) * dir
+    return ((a[sortKey] || '') > (b[sortKey] || '') ? 1 : -1) * dir
+  })
+
+  const completedCount = mentorSessions.filter(s => s.score || s.attendance?.length).length
+
+  return (
+    <div className="p-6 space-y-5">
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Sessions</h2>
+          <p className="text-sm text-gray-500">Log and track your teaching sessions</p>
+        </div>
+        {!liveSession && (
+          <button onClick={() => setShowStart(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors">
+            <Play size={14} /> Start Session
+          </button>
+        )}
+      </div>
+
+      {/* Live Session Banner */}
+      {liveSession && (
+        <div className="bg-green-50 border-2 border-green-300 rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
+              <div>
+                <p className="text-sm font-semibold text-green-800">Session in progress — {liveSession.topic}</p>
+                <p className="text-xs text-green-600">
+                  {liveSession.attendance.length} students · {liveSession.attendance.filter(a => a.status === 'present').length} present
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowAttendance(true)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white border border-green-300 text-green-700 rounded-lg hover:bg-green-50 transition-colors">
+                <Users size={14} /> Attendance
+              </button>
+              <button onClick={handleEndSession}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <Square size={14} /> End Session
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center"><Calendar size={16} className="text-blue-500" /></div>
+          <div><p className="text-xs text-gray-500">Total Sessions</p><p className="text-xl font-semibold text-gray-900">{mentorSessions.length}</p></div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center"><CheckCircle size={16} className="text-green-500" /></div>
+          <div><p className="text-xs text-gray-500">Completed</p><p className="text-xl font-semibold text-green-600">{completedCount}</p></div>
+        </div>
+      </div>
+
+      {/* Sessions Table */}
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50">
+              {[
+                { key: 'topic', label: 'Topic' },
+                { key: null, label: 'Students' },
+                { key: 'date', label: 'Date' },
+                { key: null, label: 'Attendance' },
+                { key: null, label: 'Status' },
+              ].map(col => (
+                <th key={col.label} onClick={() => col.key && handleSort(col.key)}
+                  className={`text-left px-4 py-3 text-xs font-medium text-gray-500 ${col.key ? 'cursor-pointer hover:text-gray-700 select-none' : ''}`}>
+                  <div className="flex items-center gap-1">
+                    {col.label}
+                    {col.key && <SortIcon col={col.key} />}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {sorted.map(session => {
+              const presentStudents = (session.attendance || []).filter(a => a.status === 'present')
+              const absentStudents = (session.attendance || []).filter(a => a.status === 'absent')
+              const isCompleted = !!(session.score || session.attendance?.length)
+              return (
+                <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-gray-900">{session.topic}</p>
+                    {session.notes && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[160px]">{session.notes}</p>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {(session.attendance || []).map(a => {
+                        const st = appData.students.find(s => s.id === a.studentId)
+                        return st ? (
+                          <span key={a.studentId} className={`text-xs px-1.5 py-0.5 rounded border ${a.status === 'present' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-500 border-red-200'}`}>
+                            {st.name.split(' ')[0]}
+                          </span>
+                        ) : null
+                      })}
+                      {(!session.attendance || session.attendance.length === 0) && <span className="text-xs text-gray-400">—</span>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">{session.date || '—'}</td>
+                  <td className="px-4 py-3 text-xs text-gray-500">
+                    {presentStudents.length > 0 && <span className="text-green-600">{presentStudents.length} present</span>}
+                    {presentStudents.length > 0 && absentStudents.length > 0 && <span className="mx-1">·</span>}
+                    {absentStudents.length > 0 && <span className="text-red-500">{absentStudents.length} absent</span>}
+                    {!session.attendance?.length && '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    {isCompleted
+                      ? <span className="text-xs text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Completed</span>
+                      : <span className="text-xs text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Upcoming</span>}
+                  </td>
+                </tr>
+              )
+            })}
+            {sorted.length === 0 && (
+              <tr><td colSpan={5} className="px-4 py-10 text-center text-sm text-gray-400">No sessions yet. Start one above.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {showStart && <StartSessionModal onStart={handleStart} onClose={() => setShowStart(false)} />}
+      {showAttendance && liveSession && (
+        <AttendanceModal
+          students={assignedStudents}
+          attendance={liveSession.attendance}
+          onSave={updated => setLiveSession(prev => ({ ...prev, attendance: updated }))}
+          onClose={() => setShowAttendance(false)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default MentorSessions

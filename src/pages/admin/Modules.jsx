@@ -1,6 +1,22 @@
 import { useState, useRef } from 'react'
-import { Plus, X, Upload, FileText, File, ChevronDown, ChevronUp, Users, GraduationCap, BookOpen, ShieldCheck, Trash2 } from 'lucide-react'
+import { Plus, X, Upload, FileText, File, ChevronDown, ChevronUp, Users, GraduationCap, BookOpen, ShieldCheck, Trash2, Sparkles, Loader } from 'lucide-react'
 import { mockNGOCourses as initialStudentCourses } from '../../utils/mockData'
+import { generateTrainingModule } from '../../utils/gemini'
+import { useApp } from '../../context/AppContext'
+
+// Shared store for AI-generated mentor training modules (persisted in localStorage)
+const STORE_KEY = 'mentorTrainingModules'
+export const getMentorTrainingModules = () => {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]') } catch { return [] }
+}
+export const getMentorTrainingModulesForMentor = (mentorId) => {
+  return getMentorTrainingModules().filter(m => !m.assignedMentorIds || m.assignedMentorIds.includes(mentorId))
+}
+const saveMentorTrainingModule = (entry) => {
+  const existing = getMentorTrainingModules()
+  const updated = [...existing.filter(e => e.courseId !== entry.courseId), entry]
+  localStorage.setItem(STORE_KEY, JSON.stringify(updated))
+}
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 const TRAINING_TOPICS = ['Classroom Management', 'Child Psychology', 'Lesson Planning', 'Assessment Techniques', 'Digital Tools', 'Communication Skills']
@@ -145,20 +161,46 @@ function AddCourseModal({ onClose, onAdd }) {
   )
 }
 
-function AddTrainingModal({ onClose, onAdd }) {
+function AddTrainingModal({ onClose, onAdd, mentorList }) {
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState({ name: '', topics: [], duration: '', description: '' })
+  const [form, setForm] = useState({ name: '', topics: [], duration: '', description: '', quizCount: 3, assignedMentorIds: [] })
   const [files, setFiles] = useState([])
+  const [generating, setGenerating] = useState(false)
   const toggleTopic = (t) => setForm(f => ({ ...f, topics: f.topics.includes(t) ? f.topics.filter(x => x !== t) : [...f.topics, t] }))
-  const handleAdd = () => { onAdd({ id: Date.now(), ...form, mentorsEnrolled: 0, avgCompletion: 0, modules: files }); onClose() }
+  const toggleMentor = (id) => setForm(f => ({ ...f, assignedMentorIds: f.assignedMentorIds.includes(id) ? f.assignedMentorIds.filter(x => x !== id) : [...f.assignedMentorIds, id] }))
+
+  const handleAdd = async () => {
+    const courseId = Date.now()
+    const course = { id: courseId, ...form, mentorsEnrolled: form.assignedMentorIds.length, avgCompletion: 0, modules: files }
+    onAdd(course)
+    setGenerating(true)
+    try {
+      const aiModule = await generateTrainingModule(course, form.quizCount)
+      saveMentorTrainingModule({
+        courseId, courseName: form.name, description: form.description,
+        topics: form.topics, duration: form.duration,
+        assignedMentorIds: form.assignedMentorIds,
+        quizCount: form.quizCount,
+        aiModule, generatedAt: new Date().toISOString()
+      })
+    } catch (e) { console.error('AI module generation failed:', e) }
+    setGenerating(false)
+    onClose()
+  }
+
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm w-[480px] max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm w-[500px] max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <div><p className="text-sm font-semibold text-gray-900">Add Mentor Training Course</p><p className="text-xs text-gray-400">Step {step} of 2</p></div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Add Mentor Training Course</p>
+            <p className="text-xs text-gray-400">Step {step} of 3</p>
+          </div>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><X size={16} /></button>
         </div>
+
         <div className="px-6 py-5 space-y-4">
+          {/* Step 1 — Course details */}
           {step === 1 && (<>
             <div>
               <label className="text-xs font-medium text-gray-700 block mb-1">Training Course Name</label>
@@ -187,16 +229,70 @@ function AddTrainingModal({ onClose, onAdd }) {
                 ))}
               </div>
             </div>
+            <div>
+              <label className="text-xs font-medium text-gray-700 block mb-1">Number of Quiz Questions</label>
+              <div className="flex items-center gap-3">
+                <input type="number" min={1} max={20} value={form.quizCount}
+                  onChange={e => {
+                    const v = Number(e.target.value)
+                    if (v >= 1 && v <= 20) setForm(f => ({ ...f, quizCount: v }))
+                  }}
+                  className="w-24 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <span className="text-xs text-gray-400">questions (1–20). Mentors must score ≥ 70% to complete.</span>
+              </div>
+            </div>
           </>)}
-          {step === 2 && (<><p className="text-xs text-gray-500">Upload training materials for mentors. Any file format accepted.</p><FileUploader files={files} setFiles={setFiles} /></>)}
+
+          {/* Step 2 — Assign mentors */}
+          {step === 2 && (
+            <div>
+              <p className="text-xs text-gray-500 mb-3">Select which mentors will receive this training course. Only selected mentors will see it in their Courses tab.</p>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {mentorList.map(m => {
+                  const checked = form.assignedMentorIds.includes(m.id)
+                  return (
+                    <button key={m.id} onClick={() => toggleMentor(m.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-colors ${checked ? 'border-blue-300 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ${checked ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
+                        {checked && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{m.name}</p>
+                        <p className="text-xs text-gray-400">{m.subjects.join(', ')}</p>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+              {form.assignedMentorIds.length === 0 && (
+                <p className="text-xs text-amber-600 mt-2">Select at least one mentor to assign this course.</p>
+              )}
+            </div>
+          )}
+
+          {/* Step 3 — Upload materials */}
+          {step === 3 && (<>
+            <p className="text-xs text-gray-500">Upload training materials. Any file format accepted.</p>
+            <FileUploader files={files} setFiles={setFiles} />
+          </>)}
         </div>
+
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-          {step === 2 ? <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-700">Back</button> : <div />}
+          {step > 1 ? <button onClick={() => setStep(s => s - 1)} className="text-sm text-gray-500 hover:text-gray-700">Back</button> : <div />}
           <div className="flex gap-2">
             <button onClick={onClose} className="text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
-            {step === 1
-              ? <button disabled={!form.name.trim()} onClick={() => setStep(2)} className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-40">Next</button>
-              : <button onClick={handleAdd} className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Add Training</button>}
+            {step < 3
+              ? <button
+                  disabled={step === 1 ? !form.name.trim() : form.assignedMentorIds.length === 0}
+                  onClick={() => setStep(s => s + 1)}
+                  className="text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-40">
+                  Next
+                </button>
+              : <button onClick={handleAdd} disabled={generating}
+                  className="flex items-center gap-2 text-sm px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60">
+                  {generating ? <><Loader size={13} className="animate-spin" /> Generating AI Module...</> : <><Sparkles size={13} /> Add & Generate Module</>}
+                </button>
+            }
           </div>
         </div>
       </div>
@@ -268,7 +364,7 @@ function TrainingRow({ course, onRemove }) {
               : <span className="text-xs text-gray-400">—</span>}
           </div>
         </td>
-        <td className="px-4 py-3"><div className="flex items-center gap-1.5 text-gray-700"><GraduationCap size={13} className="text-gray-400" />{course.mentorsEnrolled}</div></td>
+        <td className="px-4 py-3"><div className="flex items-center gap-1.5 text-gray-700"><GraduationCap size={13} className="text-gray-400" />{course.mentorsEnrolled || (course.assignedMentorIds || []).length}</div></td>
         <td className="px-4 py-3 w-36"><ProgressBar value={course.avgCompletion} /></td>
         <td className="px-4 py-3 text-gray-700">{course.modules.length}</td>
         <td className="px-4 py-3">
@@ -313,6 +409,8 @@ const initialMentorCourses = [
 ]
 
 export default function Modules() {
+  const { appData } = useApp()
+  const realMentors = appData.mentors || []
   const [tab, setTab] = useState('student')
   const [studentCourses, setStudentCourses] = useState(initialStudentCourses)
   const [mentorCourses, setMentorCourses] = useState(initialMentorCourses)
@@ -403,7 +501,7 @@ export default function Modules() {
       </>)}
 
       {showStudentModal && <AddCourseModal onClose={() => setShowStudentModal(false)} onAdd={c => setStudentCourses(prev => [...prev, c])} />}
-      {showTrainingModal && <AddTrainingModal onClose={() => setShowTrainingModal(false)} onAdd={c => setMentorCourses(prev => [...prev, c])} />}
+      {showTrainingModal && <AddTrainingModal onClose={() => setShowTrainingModal(false)} onAdd={c => setMentorCourses(prev => [...prev, c])} mentorList={realMentors} />}
     </div>
   )
 }

@@ -17,6 +17,7 @@ import Students from './pages/mentor/Students';
 import MentorDoubts from './pages/mentor/MentorDoubts';
 import ContentCreation from './pages/mentor/ContentCreation';
 import MentorSessions from './pages/mentor/MentorSessions';
+import MentorCourses from './pages/mentor/MentorCourses';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import Modules from './pages/admin/Modules';
 import Sessions from './pages/admin/Sessions';
@@ -111,6 +112,7 @@ const AppRoutes = () => {
             <Route path="/mentor/content" element={<ContentCreation />} />
             <Route path="/mentor/sessions" element={<MentorSessions />} />
             <Route path="/mentor/doubts" element={<MentorDoubts />} />
+            <Route path="/mentor/courses" element={<MentorCourses />} />
             <Route path="*" element={<Navigate to="/mentor" replace />} />
           </>
         )}

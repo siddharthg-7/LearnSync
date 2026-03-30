@@ -5,20 +5,24 @@ const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export const callGemini = async (prompt) => {
+  if (!API_KEY) {
+    console.warn('[Gemini] No API key provided via VITE_GEMINI_API_KEY.');
+  }
   try {
     // Use Gemini 2.5 Flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    const text = await response.text();
 
     return {
       success: true,
       data: text
     };
   } catch (error) {
-    console.error('Gemini API Error:', error);
+    console.error('[Gemini] API Error:', error);
+    console.error('[Gemini] Request prompt:', prompt);
     
     // Fallback to mock responses if API fails
     return getMockResponse(prompt);
@@ -243,3 +247,109 @@ Focus on:
 
   return insights;
 };
+
+// Generate a structured theory module + quizzes from a training course's details
+export const generateTrainingModule = async (course, quizCount = 3) => {
+  const fileList = (course.modules || []).map(f => f.name).join(', ') || 'No files uploaded'
+  const topicList = (course.topics || []).join(', ') || 'General training'
+
+  const prompt = `
+You are an expert educational content creator for a mentor training platform.
+
+A new training course has been added with the following details:
+- Course Name: ${course.name}
+- Description: ${course.description || 'Not provided'}
+- Duration: ${course.duration || 'Not specified'}
+- Topics Covered: ${topicList}
+- Uploaded Resources: ${fileList}
+
+Generate a comprehensive theory learning module AND ${quizCount} quiz questions for mentors.
+Respond ONLY with a valid JSON object in this exact format:
+{
+  "overview": "2-3 sentence overview of what this course covers and why it matters for mentors",
+  "objectives": ["learning objective 1", "learning objective 2", "learning objective 3", "learning objective 4"],
+  "sections": [
+    {
+      "title": "Section title",
+      "content": "Detailed explanation of this section (3-5 sentences with practical guidance for mentors)",
+      "keyPoints": ["key point 1", "key point 2", "key point 3"]
+    },
+    {
+      "title": "Section title",
+      "content": "Detailed explanation",
+      "keyPoints": ["key point 1", "key point 2", "key point 3"]
+    },
+    {
+      "title": "Section title",
+      "content": "Detailed explanation",
+      "keyPoints": ["key point 1", "key point 2", "key point 3"]
+    }
+  ],
+  "summary": "A concise 2-3 sentence summary of the entire module and key takeaways for mentors",
+  "practicalTips": ["practical tip 1", "practical tip 2", "practical tip 3", "practical tip 4"],
+  "quizzes": [
+    {
+      "id": 1,
+      "question": "Question text based on the course content?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 0
+    }
+  ]
+}
+
+Generate exactly ${quizCount} quiz questions in the quizzes array. Each question must have exactly 4 options and a correct index (0-3). Questions must be directly based on the course topics.
+`
+
+  try {
+    const result = await callGemini(prompt)
+    if (result.success) {
+      const jsonMatch = result.data.match(/\{[\s\S]*\}/)
+      if (jsonMatch) return JSON.parse(jsonMatch[0])
+    }
+  } catch (e) {
+    console.error('Error generating training module:', e)
+  }
+
+  // Fallback
+  const fallbackQuizzes = Array.from({ length: quizCount }, (_, i) => ({
+    id: i + 1,
+    question: `Which of the following best describes a key principle of ${course.name}?`,
+    options: ['Active listening and clear communication', 'Avoiding student feedback', 'Skipping lesson planning', 'Ignoring learning differences'],
+    correct: 0
+  }))
+
+  return {
+    overview: `This course on "${course.name}" is designed to equip mentors with practical skills and knowledge in ${topicList}. It covers essential concepts that will directly improve teaching effectiveness and student outcomes.`,
+    objectives: [
+      `Understand the core principles of ${course.name}`,
+      `Apply ${topicList} techniques in real teaching scenarios`,
+      'Develop structured lesson plans based on course content',
+      'Evaluate and adapt teaching strategies for different learners'
+    ],
+    sections: [
+      {
+        title: 'Introduction & Foundations',
+        content: `This section introduces the fundamental concepts of ${course.name}. Mentors will gain a solid understanding of the theoretical background and why these principles are critical for effective teaching.`,
+        keyPoints: ['Core definitions and terminology', 'Why this matters for student outcomes', 'How to introduce concepts to students']
+      },
+      {
+        title: 'Practical Application',
+        content: `Building on the foundations, this section focuses on hands-on application of ${topicList}. Mentors will explore real-world scenarios and learn how to adapt these techniques to different student needs.`,
+        keyPoints: ['Step-by-step implementation guide', 'Common challenges and how to overcome them', 'Adapting techniques for different age groups']
+      },
+      {
+        title: 'Assessment & Feedback',
+        content: 'Effective mentoring requires continuous assessment and constructive feedback. This section covers how to measure student progress and provide feedback that motivates improvement.',
+        keyPoints: ['Methods for tracking student progress', 'Giving constructive and motivating feedback', 'Adjusting your approach based on results']
+      }
+    ],
+    summary: `This module provides mentors with a comprehensive foundation in ${course.name}. By completing this course, mentors will be better equipped to deliver impactful sessions and support student growth effectively.`,
+    practicalTips: [
+      'Review this module before your first session on this topic',
+      'Take notes on sections most relevant to your assigned students',
+      'Discuss key concepts with fellow mentors for deeper understanding',
+      'Revisit the summary section regularly as a quick reference'
+    ],
+    quizzes: fallbackQuizzes
+  }
+}

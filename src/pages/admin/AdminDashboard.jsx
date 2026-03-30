@@ -1,6 +1,6 @@
 import { useApp } from '../../context/AppContext';
 import Card from '../../components/Card';
-import { Users, BookOpen, Calendar, TrendingUp, AlertTriangle, Sparkles, Upload } from 'lucide-react';
+import { Users, BookOpen, Calendar, TrendingUp, AlertTriangle } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { appData } = useApp();
@@ -214,53 +214,6 @@ const AdminDashboard = () => {
           </div>
         </Card>
       </div>
-
-      {/* AI Suggestions */}
-      <Card>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-blue-600" />
-            <h3 className="text-lg font-semibold text-gray-900">AI Suggestions</h3>
-            <span className="text-xs text-gray-500">Based on current data</span>
-          </div>
-          <button className="text-sm text-blue-600 hover:text-blue-700">Regenerate</button>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold text-gray-900">Attendance rate needs attention</span>
-                <span className="px-2 py-0.5 bg-yellow-200 text-yellow-800 text-xs rounded">Attendance</span>
-              </div>
-              <p className="text-sm text-gray-600">
-                Overall attendance is {avgAttendance}%, below the 85% target. Frequent absences and reach out to their families or mentors.
-              </p>
-              <button className="mt-2 px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
-                View Attendance
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <BookOpen className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold text-gray-900">Strengthen Math curriculum</span>
-                <span className="px-2 py-0.5 bg-orange-200 text-orange-800 text-xs rounded">Curriculum</span>
-              </div>
-              <p className="text-sm text-gray-600">
-                Many students are struggling in Math. Consider adding additional modules or assign a stronger mentor to focus on this subject.
-              </p>
-              <button className="mt-2 px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 flex items-center gap-2">
-                <Upload className="w-4 h-4" />
-                Upload Module
-              </button>
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 };
