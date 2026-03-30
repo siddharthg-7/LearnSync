@@ -2,8 +2,101 @@ import { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { Calendar, CheckCircle, Circle, Sparkles, Settings, Target } from 'lucide-react';
+import { CheckCircle, Circle, Sparkles, Settings, Target } from 'lucide-react';
 import { callGemini } from '../../utils/gemini';
+
+const MAX_AI_TASKS = 6;
+
+const normalizeTaskText = (text = '') => {
+  const cleaned = text.replace(/^(\d+\.\s*|[-*•]\s*)/u, '').trim();
+  return cleaned.replace(/\s+/g, ' ');
+};
+
+const guessTopicFromText = (text = '', settings = {}) => {
+  const focusTopics = (settings.focusTopics || []).map(topic => topic.toLowerCase());
+  const focusSubjects = (settings.focusSubjects || []).map(subject => subject.toLowerCase());
+  const lowerText = text.toLowerCase();
+
+  const topicMatch = focusTopics.find(topic => topic && lowerText.includes(topic));
+  if (topicMatch) {
+    return settings.focusTopics[focusTopics.indexOf(topicMatch)];
+  }
+
+  const subjectMatch = focusSubjects.find(subject => subject && lowerText.includes(subject));
+  if (subjectMatch) {
+    return settings.focusSubjects[focusSubjects.indexOf(subjectMatch)];
+  }
+
+  return settings.focusTopics?.[0] || settings.focusSubjects?.[0] || 'General';
+};
+
+const calculateXPForTopic = (topic, settings = {}) => {
+  const normalized = (topic || '').toString().toLowerCase();
+  if ((settings.focusTopics || []).some(t => t.toLowerCase() === normalized)) {
+    return 60;
+  }
+  if ((settings.focusSubjects || []).some(s => s.toLowerCase() === normalized)) {
+    return 50;
+  }
+  return 40;
+};
+
+const createTasksFromAIResponse = (data, settings) => {
+  if (!data) return [];
+
+  const tasks = [];
+  let taskId = 1;
+
+  const pushTask = (rawText, hintTopic) => {
+    if (tasks.length >= MAX_AI_TASKS) return;
+    const cleanedText = normalizeTaskText(rawText);
+    if (!cleanedText) return;
+    const topic = hintTopic || guessTopicFromText(cleanedText, settings);
+    tasks.push({
+      id: taskId++,
+      topic,
+      task: cleanedText,
+      completed: false,
+      xp: calculateXPForTopic(topic, settings)
+    });
+  };
+
+  const parseStructuredEntries = (entries = [], fallbackHintField) => {
+    entries.forEach(entry => {
+      if (tasks.length >= MAX_AI_TASKS) return;
+      if (!entry) return;
+      if (typeof entry === 'string') {
+        pushTask(entry);
+        return;
+      }
+      const rawText = entry.task || entry.description || entry.title || entry.name || '';
+      const hint = entry[fallbackHintField] || entry.topic || entry.subject;
+      pushTask(rawText, hint);
+    });
+  };
+
+  if (typeof data === 'object' && !Array.isArray(data)) {
+    parseStructuredEntries(data.daily, 'topic');
+    parseStructuredEntries(data.weekly, 'subject');
+    parseStructuredEntries(data.tasks, 'topic');
+    parseStructuredEntries(data.suggestions, 'topic');
+  }
+
+  const textPayload = typeof data === 'string' ? data : data?.text;
+  if (textPayload) {
+    const lines = textPayload
+      .split(/\r?\n/)
+      .map(line => normalizeTaskText(line))
+      .filter(line => line.length > 5);
+
+    lines.forEach(line => {
+      if (tasks.length >= MAX_AI_TASKS) return;
+      pushTask(line);
+    });
+  }
+
+  return tasks;
+};
 
 const StudyPlan = () => {
   const { appData, currentUser, updateStudyPlan, addStudyPlan } = useApp();
@@ -22,11 +115,13 @@ const StudyPlan = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   useEffect(() => {
-    // Initialize settings from student data
+    const availabilityDays = (student?.availability || []).map(slot => slot.split(' ')[0]);
+    const weakTopics = Object.values(student?.weakTopics || {}).flat();
+
     setPlanSettings({
-      focusDays: student.availability.map(slot => slot.split(' ')[0]),
-      focusSubjects: student.subjects,
-      focusTopics: Object.values(student.weakTopics).flat(),
+      focusDays: availabilityDays,
+      focusSubjects: student?.subjects || [],
+      focusTopics: weakTopics,
       studyHoursPerDay: 2
     });
   }, [student]);
@@ -59,9 +154,11 @@ Create a daily and weekly study plan that:
 4. Is realistic and achievable`;
 
       const response = await callGemini(prompt);
-      
-      // Generate tasks based on AI response and student data
-      const newTasks = generateTasksFromSettings();
+      const aiTasks = response?.success
+        ? createTasksFromAIResponse(response.data, planSettings)
+        : [];
+      // Generate tasks based on AI response and student data (fallback to deterministic plan)
+      const newTasks = aiTasks.length ? aiTasks : generateTasksFromSettings();
       
       if (studyPlan) {
         updateStudyPlan(studyPlan.id, { tasks: newTasks });
