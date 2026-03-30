@@ -1,481 +1,1599 @@
-Build a full-featured frontend web application called **LearnSync** using **React (functional components, hooks)** and **Tailwind CSS**.
+Build a complete **Student Portal** for LearnSync using **React (functional components with hooks)** and **Tailwind CSS**.
 
-LearnSync is an AI-powered learning coordination platform designed for NGOs to manage students, mentors, and educational programs.
+The portal must function as a **dynamic, AI-powered learning system** that adapts based on:
 
-The system must simulate backend behavior using **localStorage + mock data**, while maintaining real-world workflows and a clean SaaS-style UI.
+* Age group
+* Survey inputs
+* Quiz performance
+* Continuous learning behavior
 
----
+All data must be managed using **localStorage (mock data)**.
 
-# 🧠 CORE PRODUCT IDEA
+The UI must follow a **clean, professional SaaS design system**:
 
-LearnSync is a connected ecosystem where:
-
-* Students receive personalized, structured learning
-* Mentors teach, create content, and support students
-* NGOs monitor performance and impact
-* AI enhances learning, planning, and decision-making
-
----
-
-# 🏗️ SYSTEM ARCHITECTURE
-
-There are 4 main layers:
-
-1. Student Interface (Learning + Gamification)
-2. Mentor Interface (Teaching + Content Creation)
-3. NGO Admin Interface (Analytics + Control)
-4. AI Layer (Gemini 2.5 Flash integration)
+* No gradients
+* Minimal and structured layout
+* Consistent spacing and typography
+* Age-adaptive interface behavior
 
 ---
 
-# 🎨 DESIGN SYSTEM (STRICT RULES)
+# CORE SYSTEM FLOW (MANDATORY)
 
-* NO gradients
-* NO flashy UI
-* NO glassmorphism
-
-Use:
-
-* `bg-gray-50` (background)
-* `bg-white` (cards)
-* `border border-gray-200`
-* `text-gray-900` (primary text)
-* `text-gray-500` (secondary text)
-* `bg-blue-600 text-white` (primary buttons)
-* `text-green-600` (success)
-* `text-red-500` (alerts)
-
-UI style must feel like:
-👉 Notion / Stripe / Linear
-
-Use:
-
-* `rounded-xl`
-* `p-4`, `p-6`
-* `gap-4`
-* `shadow-sm`
+Survey → Age Mode → Self-Assessment → 6-Question Quiz → Level Detection → Mentor Allocation → Dashboard → Continuous Learning Loop
 
 ---
 
-# 🧱 GLOBAL LAYOUT
+# 1. DYNAMIC SURVEY SYSTEM (ENTRY POINT)
 
-## Sidebar:
+## Step 1: Basic Information
 
-* LearnSync logo
-* Navigation:
+Collect:
 
-  * Dashboard
-  * Courses
-  * Students
-  * Mentors
-  * Study Planner
-  * Doubts
-  * Analytics
-
-## Topbar:
-
-* User name
-* Role switcher:
-
-  * Student
-  * Mentor
-  * Admin
+* Name
+* Age
+* Class
 
 ---
 
-# 🧠 MOCK DATA (LOCAL STORAGE)
+## Step 2: Age Mode Detection
+
+Define three modes:
+
+* Age 5–10 → Foundation Mode
+* Age 11–15 → Growth Mode
+* Age 16–20 → Mastery Mode
+
+This mode will control UI behavior, interaction style, and feature availability.
+
+---
+
+## Step 3: Subject Selection (Dynamic)
+
+Subjects must be dynamically displayed based on the selected class:
+
+* Lower classes → Math, English, EVS
+* Middle classes → Math, Science, English, Social Studies
+* Higher classes → Physics, Chemistry, Biology, Mathematics
+
+Use a card-based selection interface.
+
+---
+
+## Step 4: Availability Input
+
+Collect:
+
+* Available days (Mon–Sun)
+* Preferred time slots
+
+This data will be used for scheduling and study planning.
+
+---
+
+## Step 5: Self-Assessment (Dynamic per Subject)
+
+For each selected subject, display key topics.
+
+Each topic must allow selection of:
+
+* Weak
+* Okay
+* Strong
+
+Example:
+
+Fractions
+[ Weak ] [ Okay ] [ Strong ]
+
+---
+
+## Voice Input (Optional)
+
+Provide an option to input assessment via voice.
+
+Example input:
+"I am weak in fractions"
+
+System should map keywords to topic-level strength.
+
+---
+
+# 2. 6-QUESTION QUIZ (LEVEL DETECTION)
+
+## Purpose
+
+To validate the student’s actual skill level based on performance.
+
+---
+
+## Structure
+
+* Total Questions: 6
+* Q1–Q2: Easy
+* Q3–Q4: Medium
+* Q5–Q6: Hard
+
+Questions must be generated based on:
+
+* Selected subjects
+* Weak topics from self-assessment
+
+---
+
+## Evaluation Logic
+
+* Score ≤ 2 → Beginner
+* Score ≤ 4 → Intermediate
+* Score ≥ 5 → Advanced
+
+---
+
+## Output
+
+Store:
+
+* Level
+* Weak topics
+* Subject preferences
+
+---
+
+# 3. MENTOR ALLOCATION (AI-BASED)
+
+Assign mentors based on:
+
+* Student level
+* Subject selection
+* Age group
+
+Rules:
+
+* Beginner students → More experienced mentors
+* Younger students → Supportive and patient mentors
+* Advanced students → Subject-specialized mentors
+
+---
+
+# 4. AGE-ADAPTIVE UI SYSTEM
+
+## Foundation Mode (Age 5–10)
+
+* Gamified interface
+* Use stars instead of percentages
+* Replace tasks with “missions”
+* Large buttons and simplified navigation
+
+---
+
+## Growth Mode (Age 11–15)
+
+* Balanced interface
+* Include XP, badges, and progress bars
+* Structured layout with mild gamification
+
+---
+
+## Mastery Mode (Age 16–20)
+
+* Minimal interface
+* Focus on planning, analytics, and efficiency
+* No gamification elements
+
+---
+
+# 5. DASHBOARD (PRIMARY INTERFACE)
+
+## Section 1: Today’s Plan
+
+Display:
+
+* Topics to study
+* Practice tasks
+* Quiz tasks
+
+This section must be the primary focus of the dashboard.
+
+---
+
+## Section 2: Pending Tasks
+
+Display remaining tasks for the day.
+
+---
+
+## Section 3: Courses
+
+Display:
+
+* Course cards
+* Progress indicators
+
+---
+
+## Section 4: Weak Areas
+
+Highlight weak topics.
+
+Clicking a topic must navigate directly to the relevant topic page.
+
+---
+
+# 6. COURSE SYSTEM
+
+## Structure
+
+Course → Chapter → Topic
+
+---
+
+## Content Sources
+
+* Mentor-created modules
+* NGO-provided modules
+
+---
+
+# 7. TOPIC PAGE (LEARNING INTERFACE)
+
+Each topic must include:
+
+1. Explanation (AI-processed from mentor content)
+2. Key Points
+3. Examples
+4. Summary
+
+---
+
+## Quiz Section
+
+* Generated based on level and weak topics
+
+---
+
+## Post-Quiz Behavior
+
+* Display score
+* Provide feedback
+* Update weak topics
+* Update progress
+
+---
+
+# 8. AI CHATBOT WITH CONTEXT FORWARDING
+
+## Feature
+
+Allow student to send topic content to chatbot.
+
+---
+
+## Flow
+
+* Topic content is passed as context
+* Student asks questions based on that content
+
+Example:
+"Explain step 2 in simpler terms"
+
+---
+
+# 9. DOUBT SYSTEM
+
+## Types
+
+* Course-related doubts
+* General doubts
+
+---
+
+## Behavior
+
+* Doubts are broadcast to all mentors
+* Filtered by subject and level
+
+---
+
+## UI
+
+* List of raised doubts
+* Status: Pending / Answered
+
+---
+
+# 10. STUDY PLANNER (FOR AGE 11+)
+
+## Input
+
+Student provides:
+
+* Date
+* Time
+* Topics or lessons
+
+---
+
+## AI Processing
+
+* Prioritize weak topics
+* Distribute tasks across available time
+
+---
+
+## Output
+
+* Daily plan
+* Weekly schedule
+
+---
+
+## Integration
+
+Study planner directly feeds into dashboard tasks.
+
+---
+
+# 11. MENTOR SUPPORT CONTENT
+
+Display:
+
+* Mentor-created modules
+* Mentor-generated quizzes
+
+---
+
+# 12. PROFILE AND PROGRESS TRACKING
+
+Display:
+
+* Improvement over time
+* Topic mastery progression
+* Quiz scores
+
+---
+
+# 13. CONTINUOUS LEARNING LOOP
+
+Learn → Quiz → Feedback → Update Profile → Generate New Plan
+
+---
+
+# SYSTEM INTERCONNECTION
+
+* Survey determines profile and UI mode
+* Weak topics influence study plan and course priority
+* Mentor content is transformed into structured learning
+* Chatbot assists using contextual content
+* Quiz updates performance and learning path
+
+---
+
+# COMPONENT STRUCTURE
+
+* Dashboard
+* Course Page
+* Topic Page
+* Study Planner
+* Chatbot Panel
+* Doubt System
+* Profile Page
+
+---
+
+# UX PRINCIPLES
+
+* Always guide the next action
+* Minimize user effort
+* Maintain clean and structured layout
+* Ensure all features are interconnected
+
+---
+
+# FINAL EXPERIENCE
+
+The system must behave as a **personalized learning assistant** that continuously adapts to the student’s needs.
+
+It should not feel like a static course platform, but rather a guided, evolving learning system.
+Build a complete **Student Portal** for LearnSync using **React (functional components with hooks)** and **Tailwind CSS**.
+
+The portal must function as a **dynamic, AI-powered learning system** that adapts based on:
+
+* Age group
+* Survey inputs
+* Quiz performance
+* Continuous learning behavior
+
+All data must be managed using **localStorage (mock data)**.
+
+The UI must follow a **clean, professional SaaS design system**:
+
+* No gradients
+* Minimal and structured layout
+* Consistent spacing and typography
+* Age-adaptive interface behavior
+
+---
+
+# CORE SYSTEM FLOW (MANDATORY)
+
+Survey → Age Mode → Self-Assessment → 6-Question Quiz → Level Detection → Mentor Allocation → Dashboard → Continuous Learning Loop
+
+---
+
+# 1. DYNAMIC SURVEY SYSTEM (ENTRY POINT)
+
+## Step 1: Basic Information
+
+Collect:
+
+* Name
+* Age
+* Class
+
+---
+
+## Step 2: Age Mode Detection
+
+Define three modes:
+
+* Age 5–10 → Foundation Mode
+* Age 11–15 → Growth Mode
+* Age 16–20 → Mastery Mode
+
+This mode will control UI behavior, interaction style, and feature availability.
+
+---
+
+## Step 3: Subject Selection (Dynamic)
+
+Subjects must be dynamically displayed based on the selected class:
+
+* Lower classes → Math, English, EVS
+* Middle classes → Math, Science, English, Social Studies
+* Higher classes → Physics, Chemistry, Biology, Mathematics
+
+Use a card-based selection interface.
+
+---
+
+## Step 4: Availability Input
+
+Collect:
+
+* Available days (Mon–Sun)
+* Preferred time slots
+
+This data will be used for scheduling and study planning.
+
+---
+
+## Step 5: Self-Assessment (Dynamic per Subject)
+
+For each selected subject, display key topics.
+
+Each topic must allow selection of:
+
+* Weak
+* Okay
+* Strong
+
+Example:
+
+Fractions
+[ Weak ] [ Okay ] [ Strong ]
+
+---
+
+## Voice Input (Optional)
+
+Provide an option to input assessment via voice.
+
+Example input:
+"I am weak in fractions"
+
+System should map keywords to topic-level strength.
+
+---
+
+# 2. 6-QUESTION QUIZ (LEVEL DETECTION)
+
+## Purpose
+
+To validate the student’s actual skill level based on performance.
+
+---
+
+## Structure
+
+* Total Questions: 6
+* Q1–Q2: Easy
+* Q3–Q4: Medium
+* Q5–Q6: Hard
+
+Questions must be generated based on:
+
+* Selected subjects
+* Weak topics from self-assessment
+
+---
+
+## Evaluation Logic
+
+* Score ≤ 2 → Beginner
+* Score ≤ 4 → Intermediate
+* Score ≥ 5 → Advanced
+
+---
+
+## Output
+
+Store:
+
+* Level
+* Weak topics
+* Subject preferences
+
+---
+
+# 3. MENTOR ALLOCATION (AI-BASED)
+
+Assign mentors based on:
+
+* Student level
+* Subject selection
+* Age group
+
+Rules:
+
+* Beginner students → More experienced mentors
+* Younger students → Supportive and patient mentors
+* Advanced students → Subject-specialized mentors
+
+---
+
+# 4. AGE-ADAPTIVE UI SYSTEM
+
+## Foundation Mode (Age 5–10)
+
+* Gamified interface
+* Use stars instead of percentages
+* Replace tasks with “missions”
+* Large buttons and simplified navigation
+
+---
+
+## Growth Mode (Age 11–15)
+
+* Balanced interface
+* Include XP, badges, and progress bars
+* Structured layout with mild gamification
+
+---
+
+## Mastery Mode (Age 16–20)
+
+* Minimal interface
+* Focus on planning, analytics, and efficiency
+* No gamification elements
+
+---
+
+# 5. DASHBOARD (PRIMARY INTERFACE)
+
+## Section 1: Today’s Plan
+
+Display:
+
+* Topics to study
+* Practice tasks
+* Quiz tasks
+
+This section must be the primary focus of the dashboard.
+
+---
+
+## Section 2: Pending Tasks
+
+Display remaining tasks for the day.
+
+---
+
+## Section 3: Courses
+
+Display:
+
+* Course cards
+* Progress indicators
+
+---
+
+## Section 4: Weak Areas
+
+Highlight weak topics.
+
+Clicking a topic must navigate directly to the relevant topic page.
+
+---
+
+# 6. COURSE SYSTEM
+
+## Structure
+
+Course → Chapter → Topic
+
+---
+
+## Content Sources
+
+* Mentor-created modules
+* NGO-provided modules
+
+---
+
+# 7. TOPIC PAGE (LEARNING INTERFACE)
+
+Each topic must include:
+
+1. Explanation (AI-processed from mentor content)
+2. Key Points
+3. Examples
+4. Summary
+
+---
+
+## Quiz Section
+
+* Generated based on level and weak topics
+
+---
+
+## Post-Quiz Behavior
+
+* Display score
+* Provide feedback
+* Update weak topics
+* Update progress
+
+---
+
+# 8. AI CHATBOT WITH CONTEXT FORWARDING
+
+## Feature
+
+Allow student to send topic content to chatbot.
+
+---
+
+## Flow
+
+* Topic content is passed as context
+* Student asks questions based on that content
+
+Example:
+"Explain step 2 in simpler terms"
+
+---
+
+# 9. DOUBT SYSTEM
+
+## Types
+
+* Course-related doubts
+* General doubts
+
+---
+
+## Behavior
+
+* Doubts are broadcast to all mentors
+* Filtered by subject and level
+
+---
+
+## UI
+
+* List of raised doubts
+* Status: Pending / Answered
+
+---
+
+# 10. STUDY PLANNER (FOR AGE 11+)
+
+## Input
+
+Student provides:
+
+* Date
+* Time
+* Topics or lessons
+
+---
+
+## AI Processing
+
+* Prioritize weak topics
+* Distribute tasks across available time
+
+---
+
+## Output
+
+* Daily plan
+* Weekly schedule
+
+---
+
+## Integration
+
+Study planner directly feeds into dashboard tasks.
+
+---
+
+# 11. MENTOR SUPPORT CONTENT
+
+Display:
+
+* Mentor-created modules
+* Mentor-generated quizzes
+
+---
+
+# 12. PROFILE AND PROGRESS TRACKING
+
+Display:
+
+* Improvement over time
+* Topic mastery progression
+* Quiz scores
+
+---
+
+# 13. CONTINUOUS LEARNING LOOP
+
+Learn → Quiz → Feedback → Update Profile → Generate New Plan
+
+---
+
+# SYSTEM INTERCONNECTION
+
+* Survey determines profile and UI mode
+* Weak topics influence study plan and course priority
+* Mentor content is transformed into structured learning
+* Chatbot assists using contextual content
+* Quiz updates performance and learning path
+
+---
+
+# COMPONENT STRUCTURE
+
+* Dashboard
+* Course Page
+* Topic Page
+* Study Planner
+* Chatbot Panel
+* Doubt System
+* Profile Page
+
+---
+
+# UX PRINCIPLES
+
+* Always guide the next action
+* Minimize user effort
+* Maintain clean and structured layout
+* Ensure all features are interconnected
+
+---
+
+# FINAL EXPERIENCE
+
+The system must behave as a **personalized learning assistant** that continuously adapts to the student’s needs.
+
+It should not feel like a static course platform, but rather a guided, evolving learning system.Build a complete **Mentor Portal** for LearnSync using **React (functional components with hooks)** and **Tailwind CSS**.
+
+The Mentor Portal must act as a **teaching, content creation, and student management system**, where mentors:
+
+* Handle assigned students
+* Resolve doubts
+* Create learning modules
+* Track student performance
+* Manage attendance
+* Improve their own skills through NGO-provided content
+
+All data must be handled using **localStorage (mock data)**.
+
+The UI must be:
+
+* Clean and professional
+* Minimal and structured
+* No gradients
+
+---
+
+# CORE SYSTEM FLOW
+
+Mentor Onboarding → Skill Assessment → Level Detection → Student Allocation → Dashboard → Teaching + Content + Doubts → Student Progress → NGO Tracking
+
+---
+
+# 1. MENTOR ONBOARDING (SURVEY + ASSESSMENT)
+
+---
+
+## Step 1: Basic Information
+
+Collect:
+
+* Name
+* Education
+* Subjects of interest
+
+---
+
+## Step 2: Teaching Capacity
+
+Collect:
+
+* Number of students mentor can handle
+
+---
+
+## Step 3: Experience and Achievements
+
+Collect:
+
+* Past teaching experience
+* Achievements or certifications
+
+---
+
+## Step 4: Skill and Subject Selection
+
+Collect:
+
+* Subjects mentor can teach
+* Experience level (Beginner / Intermediate / Advanced)
+
+---
+
+---
+
+# 2. MENTOR QUIZ (8-QUESTION ASSESSMENT)
+
+---
+
+## Purpose
+
+To determine mentor skill level for proper student allocation.
+
+---
+
+## Structure
+
+* Total Questions: 8
+* Questions based on selected subjects
+
+---
+
+## Evaluation
+
+* Low score → Beginner mentor
+* Medium score → Intermediate mentor
+* High score → Advanced mentor
+
+---
+
+## Output
 
 ```js
 {
-  students: [],
-  mentors: [],
-  courses: [],
-  chapters: [],
-  topics: [],
-  sessions: [],
-  assignments: [],
-  doubts: [],
-  studyPlans: [],
-  attendance: [],
-  analytics: {}
+  mentorLevel,
+  subjects,
+  capacity
 }
 ```
 
 ---
 
-# 👶 STUDENT SYSTEM (FULL FLOW)
+# 3. AI-BASED STUDENT ALLOCATION
 
 ---
 
-## 🔹 ONBOARDING
+## Based on:
 
-Multi-step form:
-
-1. Basic info:
-
-   * Name, age, class
-
-2. Subjects:
-
-   * Select subjects
-
-3. Availability:
-
-   * Days (Mon–Sun)
-   * Time slots
-
-4. Skill test:
-
-   * 2–3 questions
+* Mentor level
+* Subject expertise
+* Teaching capacity
+* Student level
 
 ---
 
-## 🔹 SYSTEM OUTPUT
+## Rules:
 
-* Age group
-* Skill level
+* Beginner mentors → younger students (5–10)
+* Intermediate mentors → mid-level students
+* Advanced mentors → higher-level students
+
+---
+
+---
+
+# 4. DASHBOARD (MAIN CONTROL PANEL)
+
+---
+
+## Top Metrics (4 Key Cards)
+
+Display:
+
+* Total Students
+* Sessions Conducted
+* Average Student Improvement (%)
+* Pending Doubts
+
+---
+
+## Example:
+
+Students: 2
+Sessions: 45
+Avg Improvement: 25%
+Pending Doubts: 1
+
+---
+
+## Below Metrics:
+
+* List of assigned students
+* Recent activity
+
+---
+
+---
+
+# 5. STUDENT MANAGEMENT SECTION
+
+---
+
+## Purpose
+
+Allow mentors to track each student in detail.
+
+---
+
+## Student List
+
+Display:
+
+* Student name
+* Subject
+* Progress
+
+---
+
+## Student Detail View
+
+Show:
+
+* Daily progress
 * Weak topics
+* Quiz scores
+* Attendance record
+* Issues or notes
 
 ---
 
-## 🔹 AGE-ADAPTIVE UI SYSTEM
+---
 
-```js
-if (age <= 10) → Foundation Mode
-if (age <= 14) → Growth Mode
-else → Mastery Mode
-```
+# 6. DOUBT MANAGEMENT SYSTEM
 
 ---
 
-## 🔹 COURSE SYSTEM (STRUCTURED)
+## Purpose
 
-Course → Chapter → Topic
-
-Example:
-Math → Fractions → Basics
+Allow mentors to resolve student doubts.
 
 ---
 
-## 🔹 GAMIFICATION
+## Input Source
 
-* XP points
-* Levels
-* Streaks
-* Chapter unlocking system
+* Doubts raised by students
 
 ---
 
-## 🔹 STUDENT DASHBOARD
+## Display:
 
-Sections:
-
-1. Today’s Study Plan
-2. Courses (progress)
-3. Weak Areas
-4. XP & Level
-
----
-
-## 🔹 STUDY PLAN CREATOR
-
-Inputs:
-
-* Availability
-* Weak topics
-* Subjects
-
-Logic:
-
-* Prioritize weak topics
-* Allocate time
-
-Output:
-
-* Daily tasks
-* Weekly plan
-
----
-
-## 🔹 LEARNING FLOW
-
-1. Open topic
-2. Read explanation
-3. Solve questions
-4. Submit answers
-5. Get feedback
-6. XP updated
-
----
-
-## 🔹 DOUBT SYSTEM (IMPORTANT)
-
-Student raises doubt:
-
-* Topic
+* Student name
+* Subject
 * Question
 
 ---
 
-## 🔥 SYSTEM BEHAVIOR:
+## Mentor Actions:
 
-Broadcast doubt to:
+* Answer doubt
+* Mark resolved
 
-* All mentors
-* Same subject
-* Same level
+---
+
+## AI SUPPORT (OPTIONAL)
+
+For each doubt:
+
+* Generate:
+
+  * Summary
+  * Key explanation
+  * Important concepts
 
 ---
 
 ---
 
-# 🧑‍🏫 MENTOR SYSTEM
+# 7. MODULE CREATION SYSTEM (CORE FEATURE)
 
 ---
 
-## 🔹 ONBOARDING
-
-* Education
-* Skills
-* Experience
-* Availability
-* Self-rating
-
----
-
-## 🔹 DASHBOARD
-
-Sections:
-
-* Assigned students
-* Doubt feed
-* Course management
-* Session logging
-
----
-
-## 🔹 COURSE CREATION
-
-Mentor creates:
+## Mentor Can Create:
 
 * Course
 * Chapter
 * Topic
 * Content
-* Questions (MCQ)
 
 ---
 
-## 🔹 SESSION LOGGER
+## AI PROCESSING
 
-After session:
+When mentor uploads content:
 
-* Topic
-* Score
-* Notes
+System generates:
 
----
-
----
-
-# 🏢 NGO ADMIN SYSTEM
+* Simplified explanation
+* Key points
+* Important concepts
+* Summary
+* Quiz
 
 ---
 
-## 🔹 DASHBOARD
+---
 
-Top metrics:
-
-* Total students
-* Active mentors
-* Avg performance
-* Attendance %
+# 8. STUDENT ASSESSMENT FROM MODULES
 
 ---
 
-## 🔹 ANALYTICS
+## After student studies module:
 
-### Student:
+* AI-generated quiz is given
+* Performance tracked
 
-* Progress trends
+---
+
+## System updates:
+
+* Student progress
 * Weak topics
-
-### Mentor:
-
-* Effectiveness score
-* Sessions
-
-### Attendance:
-
-* Student + mentor attendance
-
----
-
-## 🔹 AI INSIGHTS
-
-Show:
-
-* Alerts
-* Recommendations
+* Improvement
 
 ---
 
 ---
 
-# 🔀 SMART MATCHING SYSTEM
+# 9. ATTENDANCE MANAGEMENT
 
 ---
 
-Inputs:
+## Purpose
 
-* Student: age, level, subject, availability
-* Mentor: skill, experience, availability
-
----
-
-Rules:
-
-* Match subject
-* Match level
-* Match availability
-* Low experience → younger students
+Track student participation
 
 ---
 
----
+## UI
 
-# 📅 SMART SCHEDULING SYSTEM
+* Student list per session
+* Mark:
 
----
-
-Inputs:
-
-* Student availability
-* Mentor availability
+  * Present
+  * Absent
 
 ---
 
-Logic:
-
-* Find overlapping slots
-
----
-
-Output:
-
-* Suggested session time
+## Data stored per session
 
 ---
 
 ---
 
-# 📚 MODULE SYSTEM
+# 10. MENTOR LEARNING SECTION (SELF-IMPROVEMENT)
 
 ---
 
-NGO uploads modules → Mentor uses → Student learns
+## Purpose
+
+Allow mentors to improve their own skills
 
 ---
 
----
+## Show:
 
-# 🤖 AI SYSTEM (Gemini 2.5 Flash)
-
----
-
-## Features:
-
-1. Question generation
-2. Simple explanation
-3. Feedback generation
-4. Study plan generation
-5. NGO recommendations
+* NGO-provided courses
+* Learning modules
 
 ---
 
-## Function:
+## Mentor can:
 
-```js
-callGemini(prompt)
-```
+* Study content
+* Improve teaching ability
 
 ---
 
 ---
 
-# 🔗 FEATURE INTERCONNECTION
+# 11. SYSTEM INTERCONNECTION
 
 ---
 
-## FLOW 1:
+## FLOW 1: STUDENT LEARNING
 
-Mentor creates content → Student learns → Performance stored
-
----
-
-## FLOW 2:
-
-Performance → Weak topics → Study plan updated
+Mentor teaches → Student learns → Quiz → Performance updated
 
 ---
 
-## FLOW 3:
+## FLOW 2: DOUBTS
 
-Student doubt → Broadcast → Mentor answers
-
----
-
-## FLOW 4:
-
-All data → AI → NGO insights
+Student raises doubt → Mentor resolves → Student improves
 
 ---
 
-## FLOW 5:
+## FLOW 3: CONTENT
 
-Student + mentor data → Matching → Scheduling
-
----
+Mentor creates module → AI processes → Student uses → Quiz → Results
 
 ---
 
-# 🧪 DEMO FLOW
+## FLOW 4: ATTENDANCE
 
-1. Student onboarding
-2. Mentor onboarding
-3. Auto assignment
-4. Study plan generated
-5. Student learns
-6. Student raises doubt
-7. Mentor answers
-8. NGO views analytics
-9. AI recommendations shown
+Mentor marks attendance → Data tracked → NGO sees engagement
+
+---
+
+## FLOW 5: NGO TRACKING
+
+Student progress + mentor activity → NGO dashboard updates
 
 ---
 
 ---
 
-# 🏆 FINAL PRODUCT VISION
+# 12. MENTOR PERFORMANCE TRACKING (NGO SIDE)
 
-LearnSync should feel like:
+---
 
-👉 A professional SaaS platform that:
+System tracks:
 
-* Structures learning
-* Connects mentors & students
-* Uses AI to guide decisions
-* Helps NGOs measure impact
+* Student improvement
+* Doubts resolved
+* Modules created
+* Quiz performance
+
+---
+
+---
+
+# UX PRINCIPLES
+
+---
+
+* Simple and fast interaction
+* Minimal navigation
+* Clear visibility of students
+* Action-oriented interface
+
+---
+
+---
+
+# FINAL EXPERIENCE
+
+The Mentor Portal should feel like:
+
+A structured teaching system where mentors can:
+
+* Manage students
+* Deliver content
+* Resolve doubts
+* Track outcomes
 
 ---
 
 Focus on:
 
-* Clean UI
-* Real workflows
-* Strong feature connection
+* Teaching efficiency
+* Student impact
+* Content quality
+* Continuous improvement
+Build a **minimal, high-impact NGO Admin Portal** for LearnSync using **React (functional components with hooks)** and **Tailwind CSS**.
 
-Avoid:
+The portal must act as a **monitoring + control + automation system**, where NGOs:
 
-* Overdesign
-* Complexity
-* Unnecessary animations
+* Monitor overall student and mentor performance
+* Manage mentors
+* Upload study materials
+* Automatically convert content into structured courses using AI
+* Track system health
+* Receive alerts and complaints
+
+All data must be handled using **localStorage (mock data)**.
+
+The UI must be:
+
+* Clean and professional
+* Minimal (no unnecessary pages)
+* Data-focused
+* No gradients
+
+---
+
+# CORE SYSTEM PURPOSE
+
+The NGO portal must answer:
+
+* What is happening in the system?
+* Are students improving overall?
+* Are mentors performing well?
+* Is any issue or risk present?
+* What action is required?
+
+---
+
+# NAVBAR (STRICT STRUCTURE)
+
+```text
+Dashboard
+Mentors
+Study Material
+Alerts & Complaints
+```
+
+---
+
+# 1. DASHBOARD (SYSTEM OVERVIEW)
+
+---
+
+## Purpose
+
+Provide a **high-level overview of the entire system**, not individual student details.
+
+---
+
+## Show Key Metrics
+
+### Student Metrics
+
+* Average student progress (%)
+* Overall improvement trend
+* Weak topic trends (top 3 across all students)
+
+---
+
+### Attendance Metrics
+
+* Overall attendance %
+* Attendance trend (increasing or decreasing)
+
+---
+
+### Mentor Metrics
+
+* Total mentors
+* Active mentors
+* Mentor activity level
+
+---
+
+### Session Metrics
+
+* Sessions conducted
+* Sessions missed
+
+---
+
+---
+
+## Alert Section (Critical)
+
+Display system-level alerts:
+
+* Students falling below threshold (low progress)
+* Attendance dropping
+* Inactive mentors
+
+---
+
+## Behavior
+
+Clicking an alert should show:
+
+* Group of affected students
+* Related mentor
+
+---
+
+---
+
+# 2. MENTOR MANAGEMENT SYSTEM
+
+---
+
+## Purpose
+
+Manage and monitor mentor performance.
+
+---
+
+## Mentor List
+
+Display:
+
+* Name
+* Subjects
+* Students assigned
+* Sessions conducted
+* Average student improvement
+
+---
+
+## Mentor Detail View
+
+Show:
+
+* Students handled
+* Student improvement summary
+* Doubts resolved
+* Activity level
+
+---
+
+---
+
+## Tracking Metrics
+
+System must track:
+
+* Mentor effectiveness
+* Teaching consistency
+* Student outcome impact
+
+---
+
+---
+
+# 3. STUDY MATERIAL SYSTEM (AI-POWERED)
+
+---
+
+## Purpose
+
+Allow NGO to upload raw content and convert it into structured learning material automatically.
+
+---
+
+## NGO Action
+
+Upload:
+
+* Topic
+* Content (text or notes)
+
+---
+
+## AI PROCESSING (MANDATORY)
+
+Convert uploaded content into:
+
+1. Structured course
+2. Chapters and topics
+3. Simplified explanations
+4. Key concepts
+5. Learning sections
+6. Quiz for assessment
+
+---
+
+## Output
+
+A complete course structure:
+
+Course → Chapter → Topic → Content → Quiz
+
+---
+
+## Usage
+
+* Mentors use this content
+* Students learn from it
+
+---
+
+---
+
+# 4. ALERTS AND COMPLAINTS SYSTEM
+
+---
+
+## Purpose
+
+Track system issues and risks.
+
+---
+
+## Two Types
+
+### Alerts (System Generated)
+
+Triggered when:
+
+* Student progress drops below threshold
+* Attendance falls
+* Mentor becomes inactive
+* Student goes outside expected learning path
+
+---
+
+### Complaints (User Generated)
+
+From:
+
+* Students
+* Mentors
+
+---
+
+---
+
+## Display
+
+For each item show:
+
+* Type (Alert / Complaint)
+* Source (Student / Mentor / System)
+* Message
+* Status (Open / Resolved)
+
+---
+
+---
+
+## Behavior
+
+Admin can:
+
+* View details
+* Mark as resolved
+* Take action (external or internal)
+
+---
+
+---
+
+# 5. SYSTEM MONITORING LOGIC
+
+---
+
+## Student Monitoring (Overall)
+
+* Track average progress across system
+* Identify deviation from expected learning path
+
+---
+
+## Mentor Monitoring
+
+* Track mentor activity
+* Detect low engagement
+* Evaluate effectiveness
+
+---
+
+---
+
+## Critical Condition (IMPORTANT)
+
+If any student or group of students:
+
+* Falls significantly behind
+* Shows low engagement
+* Stops progressing
+
+System must trigger an alert.
+
+---
+
+---
+
+# 6. SYSTEM INTERCONNECTION
+
+---
+
+## FLOW 1: CONTENT
+
+NGO uploads material
+→ AI converts to course
+→ Mentor uses
+→ Student learns
+
+---
+
+## FLOW 2: LEARNING
+
+Student learns
+→ Takes quiz
+→ Performance updated
+→ Dashboard reflects change
+
+---
+
+## FLOW 3: MONITORING
+
+Student + mentor data
+→ Aggregated
+→ NGO dashboard
+
+---
+
+## FLOW 4: ALERTING
+
+Abnormal behavior detected
+→ Alert generated
+→ NGO notified
+
+---
+
+## FLOW 5: COMPLAINTS
+
+User submits issue
+→ Appears in portal
+→ NGO resolves
+
+---
+
+---
+
+# UX PRINCIPLES
+
+---
+
+* No clutter
+* Focus on system-level data
+* Minimal navigation
+* Clear hierarchy
+* Every screen must support decision-making
+
+---
+
+---
+
+# FINAL EXPERIENCE
+
+The NGO portal should feel like:
+
+A centralized control system that:
+
+* Monitors learning outcomes
+* Tracks mentor performance
+* Automates content creation
+* Detects issues early
+* Enables quick intervention
+
+---
+
+Focus on:
+
+* System health
+* Automation
+* Insights
+* Control

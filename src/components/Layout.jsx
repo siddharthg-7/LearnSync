@@ -1,10 +1,16 @@
 import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Home, BookOpen, Users, UserCheck, Calendar, HelpCircle, BarChart3, Menu, X } from 'lucide-react';
+import { Home, BookOpen, Users, Calendar, HelpCircle, BarChart3, Menu, X, LogOut, User } from 'lucide-react';
 
 const Layout = ({ children }) => {
-  const { currentRole, switchRole, currentUser, appData } = useApp();
+  const { currentRole, currentUser, updateCurrentUser } = useApp();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
+
+  const handleLogout = () => {
+    updateCurrentUser(null);
+  };
 
   const navigation = {
     student: [
@@ -12,7 +18,7 @@ const Layout = ({ children }) => {
       { name: 'Courses', icon: BookOpen, path: '/courses' },
       { name: 'Study Planner', icon: Calendar, path: '/study-plan' },
       { name: 'Doubts', icon: HelpCircle, path: '/doubts' },
-      { name: 'Progress', icon: BarChart3, path: '/progress' }
+      { name: 'Profile', icon: User, path: '/profile' }
     ],
     mentor: [
       { name: 'Dashboard', icon: Home, path: '/mentor' },
@@ -23,10 +29,10 @@ const Layout = ({ children }) => {
     ],
     admin: [
       { name: 'Dashboard', icon: Home, path: '/admin' },
-      { name: 'Students', icon: Users, path: '/admin/students' },
-      { name: 'Mentors', icon: UserCheck, path: '/admin/mentors' },
-      { name: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
-      { name: 'Courses', icon: BookOpen, path: '/admin/courses' }
+      { name: 'Modules', icon: BookOpen, path: '/admin/modules' },
+      { name: 'Sessions', icon: Calendar, path: '/admin/sessions' },
+      { name: 'AI Insights', icon: BarChart3, path: '/admin/insights' },
+      { name: 'Feedback', icon: HelpCircle, path: '/admin/feedback' }
     ]
   };
 
@@ -41,16 +47,23 @@ const Layout = ({ children }) => {
         </div>
         
         <nav className="px-4 space-y-2">
-          {currentNav.map((item) => (
-            <a
-              key={item.name}
-              href={item.path}
-              className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
-            >
-              <item.icon className="w-5 h-5" />
-              <span>{item.name}</span>
-            </a>
-          ))}
+          {currentNav.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.name}
+                to={item.path}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                  isActive 
+                    ? 'bg-blue-50 text-blue-600' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
@@ -66,24 +79,27 @@ const Layout = ({ children }) => {
           </button>
 
           <div className="flex items-center gap-4">
-            <select
-              value={currentRole}
-              onChange={(e) => switchRole(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="student">Student</option>
-              <option value="mentor">Mentor</option>
-              <option value="admin">Admin</option>
-            </select>
-
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
                 {currentUser?.name?.[0] || 'U'}
               </div>
-              <span className="text-gray-900 font-medium">
-                {currentUser?.name || 'User'}
-              </span>
+              <div>
+                <span className="text-gray-900 font-medium block">
+                  {currentUser?.name || 'User'}
+                </span>
+                <span className="text-gray-500 text-xs capitalize">
+                  {currentRole}
+                </span>
+              </div>
             </div>
+
+            <button
+              onClick={handleLogout}
+              className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5 text-gray-600" />
+            </button>
           </div>
         </div>
 

@@ -1,741 +1,792 @@
-Build a complete **Student Portal** for LearnSync using **React (functional components + hooks)** and **Tailwind CSS**.
+Build a complete **Student Portal** for LearnSync using **React (functional components with hooks)** and **Tailwind CSS**.
 
-The Student Portal must act as:
-👉 A **personal tutor + planner + progress tracker**
+The portal must function as a **dynamic, AI-powered learning system** that adapts based on:
 
-All data must be handled using **localStorage (mock data)**.
+* Age group
+* Survey inputs
+* Quiz performance
+* Continuous learning behavior
 
-The UI must be **clean, minimal, professional**, with **NO gradients**.
+All data must be managed using **localStorage (mock data)**.
 
----
+The UI must follow a **clean, professional SaaS design system**:
 
-# 🧠 CORE OBJECTIVE
-
-The Student Portal must:
-
-* Personalize learning instantly
-* Adapt UI based on age
-* Provide structured course learning
-* Guide daily study using a planner
-* Track progress & performance
-* Allow collaborative doubt resolution
-* Use AI for assistance
+* No gradients
+* Minimal and structured layout
+* Consistent spacing and typography
+* Age-adaptive interface behavior
 
 ---
 
-# 🧾 1. ONBOARDING FLOW (FIRST LOGIN)
+# CORE SYSTEM FLOW (MANDATORY)
+
+Survey → Age Mode → Self-Assessment → 6-Question Quiz → Level Detection → Mentor Allocation → Dashboard → Continuous Learning Loop
 
 ---
 
-## 🔹 Step 1: Basic Info
+# 1. DYNAMIC SURVEY SYSTEM (ENTRY POINT)
 
-UI:
+## Step 1: Basic Information
 
-* Input fields:
+Collect:
 
-  * Name
-  * Age
-  * Class
-
----
-
-## 🔹 Step 2: Subjects Selection
-
-UI:
-
-* Multi-select cards:
-
-  * Math
-  * English
-  * Science
+* Name
+* Age
+* Class
 
 ---
 
-## 🔹 Step 3: Availability
+## Step 2: Age Mode Detection
 
-UI:
+Define three modes:
 
-* Days grid (Mon–Sun checkboxes)
-* Time slots input (dropdown or chips)
+* Age 5–10 → Foundation Mode
+* Age 11–15 → Growth Mode
+* Age 16–20 → Mastery Mode
 
----
-
-## 🔹 Step 4: SELF-ASSESSMENT (UPDATED — NO QUIZ)
-
----
-
-## 🎯 Title:
-
-“Tell us where you need help”
+This mode will control UI behavior, interaction style, and feature availability.
 
 ---
 
-## UI:
+## Step 3: Subject Selection (Dynamic)
 
-For each subject:
+Subjects must be dynamically displayed based on the selected class:
 
-### Example: Math
+* Lower classes → Math, English, EVS
+* Middle classes → Math, Science, English, Social Studies
+* Higher classes → Physics, Chemistry, Biology, Mathematics
 
-Show topics:
-
-* Addition
-* Subtraction
-* Fractions
-* Division
+Use a card-based selection interface.
 
 ---
 
-## For each topic:
+## Step 4: Availability Input
 
-Three options:
+Collect:
 
-* 😕 Weak
-* 😐 Okay
-* 😊 Strong
+* Available days (Mon–Sun)
+* Preferred time slots
 
----
-
-## UI Style:
-
-* Horizontal buttons
-* Color-coded:
-
-  * Weak → red
-  * Okay → yellow
-  * Strong → green
+This data will be used for scheduling and study planning.
 
 ---
 
-## 🎤 Voice Input Button
+## Step 5: Self-Assessment (Dynamic per Subject)
 
-* Button: “Tell by Voice”
+For each selected subject, display key topics.
 
-Flow:
+Each topic must allow selection of:
 
-* Student speaks:
-  “I am weak in fractions”
+* Weak
+* Okay
+* Strong
 
-* System updates topic state (mock parsing)
+Example:
 
----
-
-## 💾 Store:
-
-```js id="std-skill"
-{
-  subject: "Math",
-  topics: {
-    fractions: "weak",
-    addition: "strong"
-  }
-}
-```
+Fractions
+[ Weak ] [ Okay ] [ Strong ]
 
 ---
 
-# 🎨 2. AGE-ADAPTIVE UI SYSTEM
+## Voice Input (Optional)
+
+Provide an option to input assessment via voice.
+
+Example input:
+"I am weak in fractions"
+
+System should map keywords to topic-level strength.
 
 ---
 
-## Logic:
+# 2. 6-QUESTION QUIZ (LEVEL DETECTION)
 
-```js id="mode-logic"
-if (age <= 10) → foundation
-else if (age <= 14) → growth
-else → mastery
-```
+## Purpose
+
+To validate the student’s actual skill level based on performance.
 
 ---
 
-## Modes:
+## Structure
 
-### Foundation (5–10):
+* Total Questions: 6
+* Q1–Q2: Easy
+* Q3–Q4: Medium
+* Q5–Q6: Hard
 
-* Big UI
-* Icons
-* “Missions”
-* Stars ⭐
+Questions must be generated based on:
 
----
-
-### Growth (11–14):
-
-* XP system
-* Badges
-* Progress bars
+* Selected subjects
+* Weak topics from self-assessment
 
 ---
 
-### Mastery (15–19):
+## Evaluation Logic
 
-* Minimal UI
-* Study planner focus
-* Analytics
-
----
+* Score ≤ 2 → Beginner
+* Score ≤ 4 → Intermediate
+* Score ≥ 5 → Advanced
 
 ---
 
-# 🏠 3. STUDENT DASHBOARD
+## Output
+
+Store:
+
+* Level
+* Weak topics
+* Subject preferences
 
 ---
 
-## 🔥 Section 1: Today’s Study Plan
+# 3. MENTOR ALLOCATION (AI-BASED)
 
-Card UI:
+Assign mentors based on:
 
-* Tasks list:
+* Student level
+* Subject selection
+* Age group
 
-  * Revise Fractions
-  * Solve 5 questions
-  * Take quiz
+Rules:
 
-Button:
-
-* “Start Learning”
-
----
-
-## 📚 Section 2: Courses
-
-Grid of cards:
-
-Each card:
-
-* Course name
-* Progress bar
-* XP / level
+* Beginner students → More experienced mentors
+* Younger students → Supportive and patient mentors
+* Advanced students → Subject-specialized mentors
 
 ---
 
-## ⚠️ Section 3: Weak Areas
+# 4. AGE-ADAPTIVE UI SYSTEM
 
-* List weak topics
-* Styled in red
+## Foundation Mode (Age 5–10)
 
----
-
-## 📊 Section 4: Progress Summary
-
-* Overall %
-* Weekly improvement
+* Gamified interface
+* Use stars instead of percentages
+* Replace tasks with “missions”
+* Large buttons and simplified navigation
 
 ---
 
-## 🎮 Section 5: XP / Level
+## Growth Mode (Age 11–15)
 
-* XP count
-* Level badge
-
----
-
----
-
-# 📚 4. COURSE SYSTEM
+* Balanced interface
+* Include XP, badges, and progress bars
+* Structured layout with mild gamification
 
 ---
 
-## Structure:
+## Mastery Mode (Age 16–20)
+
+* Minimal interface
+* Focus on planning, analytics, and efficiency
+* No gamification elements
+
+---
+
+# 5. DASHBOARD (PRIMARY INTERFACE)
+
+## Section 1: Today’s Plan
+
+Display:
+
+* Topics to study
+* Practice tasks
+* Quiz tasks
+
+This section must be the primary focus of the dashboard.
+
+---
+
+## Section 2: Pending Tasks
+
+Display remaining tasks for the day.
+
+---
+
+## Section 3: Courses
+
+Display:
+
+* Course cards
+* Progress indicators
+
+---
+
+## Section 4: Weak Areas
+
+Highlight weak topics.
+
+Clicking a topic must navigate directly to the relevant topic page.
+
+---
+
+# 6. COURSE SYSTEM
+
+## Structure
 
 Course → Chapter → Topic
 
 ---
 
-## 📘 Course Page
+## Content Sources
 
-* Title
-* Progress bar
-* Chapters list
-
----
-
-## 📖 Chapter Page
-
-* Topics list
-* Status:
-
-  * Completed
-  * In Progress
-  * Locked
+* Mentor-created modules
+* NGO-provided modules
 
 ---
 
-## 🔒 Unlock Logic:
+# 7. TOPIC PAGE (LEARNING INTERFACE)
 
-* Next chapter unlocks only after completion
+Each topic must include:
 
----
-
----
-
-# 🧪 5. TOPIC LEARNING PAGE
-
----
-
-## Layout:
-
-### Explanation Section
-
-* Simple text
-
----
-
-### AI Button
-
-* “Explain Simply”
-
----
-
-### Questions Section
-
-* MCQs
-
----
-
-### Submit Button
-
----
-
-## After Submit:
-
-* Show score
-* Highlight wrong answers
-* Update progress
-* Add XP
-
----
-
----
-
-# 📅 6. STUDY PLAN CREATOR
-
----
-
-## Inputs:
-
-* Availability
-* Weak topics
-* Subjects
-
----
-
-## Logic:
-
-* Weak topics = priority
-* Allocate time
-
----
-
-## Output:
-
-Daily tasks:
-
-* Revise Fractions
-* Practice
-* Quiz
-
----
-
-## UI:
-
-* Daily plan card
-* Weekly planner view
-
----
-
----
-
-# 🤖 7. AI FEATURES (Gemini 2.5 Flash)
-
----
-
-## Buttons:
-
-* “Explain Simply”
-* “Generate Study Plan”
-
----
-
-## Behavior:
-
-* Loading state
-* Show result in card
-
----
-
----
-
-# 🙋 8. DOUBT SYSTEM (COLLABORATIVE)
-
----
-
-## Student Action:
-
-Click “Raise Doubt”
-
----
-
-## Form:
-
-* Topic
-* Question text
-
----
-
-## Save:
-
-```js id="doubt"
-{
-  studentId,
-  subject,
-  level,
-  question,
-  replies: []
-}
-```
-
----
-
-## SYSTEM BEHAVIOR:
-
-Broadcast to:
-
-* All mentors
-* Same subject
-* Same level
-
----
-
----
-
-# 📊 9. PROGRESS PAGE
-
----
-
-## Show:
-
-* Weekly graph
-* Topic mastery
-* Completion %
-
----
-
----
-
-# 🔄 10. CONTINUOUS ADAPTATION
-
-After each activity:
-
-* Update:
-
-  * Weak topics
-  * Progress
-  * Study plan
-
----
-
----
-
-# 🔗 FULL USER FLOW
-
-```text id="student-flow"
-Onboarding
- ↓
-Profile created
- ↓
-Dashboard shows plan
- ↓
-Student studies topic
- ↓
-Answers questions
- ↓
-Gets feedback
- ↓
-Progress updates
- ↓
-Study plan updates
- ↓
-Raises doubt
- ↓
-Mentor responds
-```
-
----
-
----
-
-# 🧩 COMPONENTS
-
-* DashboardCard
-* CourseCard
-* ProgressBar
-* TaskList
-* TopicCard
-* QuestionCard
-* Modal
-* InputField
-
----
-
----
-
-# 🎯 UX PRINCIPLES
-
-* Minimal clicks
-* Clean layout
-* Clear actions
-* Fast interaction
-
----
-
----
-
-# 🏆 FINAL EXPERIENCE
-
-The student portal should feel like:
-
-👉 A **personal AI tutor + structured learning system**
-
-NOT:
-
-* A static dashboard
-
----
-
-Focus on:
-
-* Personalization
-* Clarity
-* Engagement
-* Guidance
-# 🤖 AI-POWERED LEARNING PIPELINE (STUDENT SIDE — CRITICAL FEATURE)
-
-Implement a system where mentor-provided content is transformed into personalized learning modules for students using AI (Gemini 2.5 Flash).
-
----
-
-# 🧑‍🏫 STEP 1: MENTOR PROVIDES MATERIAL
-
-Mentor uploads or inputs:
-
-* Topic (e.g., “Fractions Basics”)
-* Content (text / notes)
-
-Store in:
-
-```js
-{
-  topic: "Fractions",
-  content: "definition and examples...",
-  difficulty: "basic"
-}
-```
-
----
-
-# 🤖 STEP 2: AI CONTENT PROCESSING
-
-When student opens the topic:
-
-Call Gemini with:
-
-Prompt:
-
-"Convert the following content into a structured learning module for a {student_level} student. Include:
-
-1. Simple explanation
-2. Key points
+1. Explanation (AI-processed from mentor content)
+2. Key Points
 3. Examples
-4. Summary"
+4. Summary
 
 ---
 
-# 📘 STEP 3: STUDENT LEARNING MODULE (UI)
+## Quiz Section
 
-Render as:
-
-### Section 1: Simplified Explanation
-
-* Easy-to-read content
+* Generated based on level and weak topics
 
 ---
 
-### Section 2: Key Points
+## Post-Quiz Behavior
 
-* Bullet list
-
----
-
-### Section 3: Examples
-
-* Simple examples
+* Display score
+* Provide feedback
+* Update weak topics
+* Update progress
 
 ---
 
-### Section 4: Quick Summary
+# 8. AI CHATBOT WITH CONTEXT FORWARDING
 
-* Short recap
+## Feature
 
----
-
----
-
-# 🧪 STEP 4: AI QUIZ GENERATION
-
-Use student data:
-
-* Level
-* Weak topics
-* Past performance
+Allow student to send topic content to chatbot.
 
 ---
 
-Prompt:
+## Flow
 
-"Generate 5 questions for the topic 'Fractions' for a {student_level} student. Focus more on weak areas."
+* Topic content is passed as context
+* Student asks questions based on that content
 
----
-
-Output:
-
-* 5 questions
-* Difficulty tags
+Example:
+"Explain step 2 in simpler terms"
 
 ---
 
----
+# 9. DOUBT SYSTEM
 
-# 🎯 STEP 5: PERSONALIZATION (VERY IMPORTANT)
+## Types
 
-Use:
-
-```js
-studentData = {
-  level: "beginner",
-  weakTopics: ["fractions"]
-}
-```
+* Course-related doubts
+* General doubts
 
 ---
 
-Rules:
+## Behavior
 
-* Weak topics → more questions
-* Beginner → simple language
-* Strong topics → fewer questions
-
----
+* Doubts are broadcast to all mentors
+* Filtered by subject and level
 
 ---
 
-# 📊 STEP 6: AFTER STUDENT COMPLETES QUIZ
+## UI
+
+* List of raised doubts
+* Status: Pending / Answered
+
+---
+
+# 10. STUDY PLANNER (FOR AGE 11+)
+
+## Input
+
+Student provides:
+
+* Date
+* Time
+* Topics or lessons
+
+---
+
+## AI Processing
+
+* Prioritize weak topics
+* Distribute tasks across available time
+
+---
+
+## Output
+
+* Daily plan
+* Weekly schedule
+
+---
+
+## Integration
+
+Study planner directly feeds into dashboard tasks.
+
+---
+
+# 11. MENTOR SUPPORT CONTENT
+
+Display:
+
+* Mentor-created modules
+* Mentor-generated quizzes
+
+---
+
+# 12. PROFILE AND PROGRESS TRACKING
+
+Display:
+
+* Improvement over time
+* Topic mastery progression
+* Quiz scores
+
+---
+
+# 13. CONTINUOUS LEARNING LOOP
+
+Learn → Quiz → Feedback → Update Profile → Generate New Plan
+
+---
+
+# SYSTEM INTERCONNECTION
+
+* Survey determines profile and UI mode
+* Weak topics influence study plan and course priority
+* Mentor content is transformed into structured learning
+* Chatbot assists using contextual content
+* Quiz updates performance and learning path
+
+---
+
+# COMPONENT STRUCTURE
+
+* Dashboard
+* Course Page
+* Topic Page
+* Study Planner
+* Chatbot Panel
+* Doubt System
+* Profile Page
+
+---
+
+# UX PRINCIPLES
+
+* Always guide the next action
+* Minimize user effort
+* Maintain clean and structured layout
+* Ensure all features are interconnected
+
+---
+
+# FINAL EXPERIENCE
+
+The system must behave as a **personalized learning assistant** that continuously adapts to the student’s needs.
+
+It should not feel like a static course platform, but rather a guided, evolving learning system.
+Build a complete **Student Portal** for LearnSync using **React (functional components with hooks)** and **Tailwind CSS**.
+
+The portal must function as a **dynamic, AI-powered learning system** that adapts based on:
+
+* Age group
+* Survey inputs
+* Quiz performance
+* Continuous learning behavior
+
+All data must be managed using **localStorage (mock data)**.
+
+The UI must follow a **clean, professional SaaS design system**:
+
+* No gradients
+* Minimal and structured layout
+* Consistent spacing and typography
+* Age-adaptive interface behavior
+
+---
+
+# CORE SYSTEM FLOW (MANDATORY)
+
+Survey → Age Mode → Self-Assessment → 6-Question Quiz → Level Detection → Mentor Allocation → Dashboard → Continuous Learning Loop
+
+---
+
+# 1. DYNAMIC SURVEY SYSTEM (ENTRY POINT)
+
+## Step 1: Basic Information
+
+Collect:
+
+* Name
+* Age
+* Class
+
+---
+
+## Step 2: Age Mode Detection
+
+Define three modes:
+
+* Age 5–10 → Foundation Mode
+* Age 11–15 → Growth Mode
+* Age 16–20 → Mastery Mode
+
+This mode will control UI behavior, interaction style, and feature availability.
+
+---
+
+## Step 3: Subject Selection (Dynamic)
+
+Subjects must be dynamically displayed based on the selected class:
+
+* Lower classes → Math, English, EVS
+* Middle classes → Math, Science, English, Social Studies
+* Higher classes → Physics, Chemistry, Biology, Mathematics
+
+Use a card-based selection interface.
+
+---
+
+## Step 4: Availability Input
+
+Collect:
+
+* Available days (Mon–Sun)
+* Preferred time slots
+
+This data will be used for scheduling and study planning.
+
+---
+
+## Step 5: Self-Assessment (Dynamic per Subject)
+
+For each selected subject, display key topics.
+
+Each topic must allow selection of:
+
+* Weak
+* Okay
+* Strong
+
+Example:
+
+Fractions
+[ Weak ] [ Okay ] [ Strong ]
+
+---
+
+## Voice Input (Optional)
+
+Provide an option to input assessment via voice.
+
+Example input:
+"I am weak in fractions"
+
+System should map keywords to topic-level strength.
+
+---
+
+# 2. 6-QUESTION QUIZ (LEVEL DETECTION)
+
+## Purpose
+
+To validate the student’s actual skill level based on performance.
+
+---
+
+## Structure
+
+* Total Questions: 6
+* Q1–Q2: Easy
+* Q3–Q4: Medium
+* Q5–Q6: Hard
+
+Questions must be generated based on:
+
+* Selected subjects
+* Weak topics from self-assessment
+
+---
+
+## Evaluation Logic
+
+* Score ≤ 2 → Beginner
+* Score ≤ 4 → Intermediate
+* Score ≥ 5 → Advanced
+
+---
+
+## Output
 
 Store:
 
-```js
-{
-  score: 3,
-  topic: "Fractions"
-}
-```
-
----
-
-Call Gemini:
-
-Prompt:
-
-"A student scored 3/5 in Fractions. Suggest what they should revise next."
-
----
-
-Output:
-
-* Feedback
-* Next topic suggestion
-
----
-
----
-
-# 🔄 STEP 7: SYSTEM UPDATES
-
-Update:
-
+* Level
 * Weak topics
-* Progress
-* Study plan
+* Subject preferences
 
 ---
 
----
+# 3. MENTOR ALLOCATION (AI-BASED)
 
-# 🔗 FULL FLOW
+Assign mentors based on:
 
-```text
-Mentor uploads content
-        ↓
-AI processes content
-        ↓
-Student sees structured module
-        ↓
-Student takes quiz
-        ↓
-AI gives feedback
-        ↓
-System updates learning path
-```
+* Student level
+* Subject selection
+* Age group
+
+Rules:
+
+* Beginner students → More experienced mentors
+* Younger students → Supportive and patient mentors
+* Advanced students → Subject-specialized mentors
 
 ---
 
----
+# 4. AGE-ADAPTIVE UI SYSTEM
 
-# 🎯 UI REQUIREMENTS
+## Foundation Mode (Age 5–10)
 
----
-
-## Topic Page Layout:
-
-1. Title
-2. Explanation
-3. Key Points
-4. Examples
-5. Summary
-6. Quiz
-7. Feedback
+* Gamified interface
+* Use stars instead of percentages
+* Replace tasks with “missions”
+* Large buttons and simplified navigation
 
 ---
 
-## Buttons:
+## Growth Mode (Age 11–15)
 
-* “Explain Simply”
-* “Generate Quiz”
-* “Submit Answers”
-
----
+* Balanced interface
+* Include XP, badges, and progress bars
+* Structured layout with mild gamification
 
 ---
 
-# ⚠️ IMPORTANT
+## Mastery Mode (Age 16–20)
 
-* Keep content short
-* Show loading states
-* Allow mentor override
-
----
+* Minimal interface
+* Focus on planning, analytics, and efficiency
+* No gamification elements
 
 ---
 
-# 🏆 FINAL GOAL
+# 5. DASHBOARD (PRIMARY INTERFACE)
 
-This feature must feel like:
+## Section 1: Today’s Plan
 
-👉 “Every topic becomes a personalized mini-course automatically”
+Display:
+
+* Topics to study
+* Practice tasks
+* Quiz tasks
+
+This section must be the primary focus of the dashboard.
 
 ---
 
-Focus on:
+## Section 2: Pending Tasks
 
-* Simplicity
-* Clarity
-* Personalization
+Display remaining tasks for the day.
+
+---
+
+## Section 3: Courses
+
+Display:
+
+* Course cards
+* Progress indicators
+
+---
+
+## Section 4: Weak Areas
+
+Highlight weak topics.
+
+Clicking a topic must navigate directly to the relevant topic page.
+
+---
+
+# 6. COURSE SYSTEM
+
+## Structure
+
+Course → Chapter → Topic
+
+---
+
+## Content Sources
+
+* Mentor-created modules
+* NGO-provided modules
+
+---
+
+# 7. TOPIC PAGE (LEARNING INTERFACE)
+
+Each topic must include:
+
+1. Explanation (AI-processed from mentor content)
+2. Key Points
+3. Examples
+4. Summary
+
+---
+
+## Quiz Section
+
+* Generated based on level and weak topics
+
+---
+
+## Post-Quiz Behavior
+
+* Display score
+* Provide feedback
+* Update weak topics
+* Update progress
+
+---
+
+# 8. AI CHATBOT WITH CONTEXT FORWARDING
+
+## Feature
+
+Allow student to send topic content to chatbot.
+
+---
+
+## Flow
+
+* Topic content is passed as context
+* Student asks questions based on that content
+
+Example:
+"Explain step 2 in simpler terms"
+
+---
+
+# 9. DOUBT SYSTEM
+
+## Types
+
+* Course-related doubts
+* General doubts
+
+---
+
+## Behavior
+
+* Doubts are broadcast to all mentors
+* Filtered by subject and level
+
+---
+
+## UI
+
+* List of raised doubts
+* Status: Pending / Answered
+
+---
+
+# 10. STUDY PLANNER (FOR AGE 11+)
+
+## Input
+
+Student provides:
+
+* Date
+* Time
+* Topics or lessons
+
+---
+
+## AI Processing
+
+* Prioritize weak topics
+* Distribute tasks across available time
+
+---
+
+## Output
+
+* Daily plan
+* Weekly schedule
+
+---
+
+## Integration
+
+Study planner directly feeds into dashboard tasks.
+
+---
+
+# 11. MENTOR SUPPORT CONTENT
+
+Display:
+
+* Mentor-created modules
+* Mentor-generated quizzes
+
+---
+
+# 12. PROFILE AND PROGRESS TRACKING
+
+Display:
+
+* Improvement over time
+* Topic mastery progression
+* Quiz scores
+
+---
+
+# 13. CONTINUOUS LEARNING LOOP
+
+Learn → Quiz → Feedback → Update Profile → Generate New Plan
+
+---
+
+# SYSTEM INTERCONNECTION
+
+* Survey determines profile and UI mode
+* Weak topics influence study plan and course priority
+* Mentor content is transformed into structured learning
+* Chatbot assists using contextual content
+* Quiz updates performance and learning path
+
+---
+
+# COMPONENT STRUCTURE
+
+* Dashboard
+* Course Page
+* Topic Page
+* Study Planner
+* Chatbot Panel
+* Doubt System
+* Profile Page
+
+---
+
+# UX PRINCIPLES
+
+* Always guide the next action
+* Minimize user effort
+* Maintain clean and structured layout
+* Ensure all features are interconnected
+
+---
+
+# FINAL EXPERIENCE
+
+The system must behave as a **personalized learning assistant** that continuously adapts to the student’s needs.
+
+It should not feel like a static course platform, but rather a guided, evolving learning system.

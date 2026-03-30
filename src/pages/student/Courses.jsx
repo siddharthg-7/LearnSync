@@ -4,13 +4,16 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 import ProgressBar from '../../components/ProgressBar';
-import { BookOpen, Lock, CheckCircle, Play } from 'lucide-react';
+import ChatbotPanel from '../../components/ChatbotPanel';
+import { BookOpen, Lock, CheckCircle, Play, MessageCircle, Sparkles } from 'lucide-react';
 
 const Courses = () => {
-  const { appData, currentUser } = useApp();
+  const { appData, currentUser, updateStudent } = useApp();
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [showTopicModal, setShowTopicModal] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [chatbotContext, setChatbotContext] = useState(null);
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
 
@@ -24,7 +27,41 @@ const Courses = () => {
     setShowResults(false);
   };
 
+  const handleSendToChatbot = () => {
+    setChatbotContext({
+      title: selectedTopic.name,
+      content: selectedTopic.content
+    });
+    setShowChatbot(true);
+  };
+
   const handleSubmitQuiz = () => {
+    const correctAnswers = selectedTopic.questions.filter(q => answers[q.id] === q.correct).length;
+    const totalQuestions = selectedTopic.questions.length;
+    const score = (correctAnswers / totalQuestions) * 100;
+
+    // Update student progress
+    const updatedStudent = {
+      ...student,
+      xp: student.xp + selectedTopic.xpReward,
+      completedTopics: [...student.completedTopics, selectedTopic.name.toLowerCase()]
+    };
+
+    // Update weak topics based on performance
+    if (score < 60) {
+      const subject = courses.find(c => c.chapters.some(ch => 
+        appData.chapters.find(chapter => chapter.id === ch)?.topics.includes(selectedTopic.id)
+      ))?.subject;
+      
+      if (subject && !student.weakTopics[subject]?.includes(selectedTopic.name.toLowerCase())) {
+        updatedStudent.weakTopics = {
+          ...student.weakTopics,
+          [subject]: [...(student.weakTopics[subject] || []), selectedTopic.name.toLowerCase()]
+        };
+      }
+    }
+
+    updateStudent(student.id, updatedStudent);
     setShowResults(true);
   };
 
@@ -137,11 +174,75 @@ const Courses = () => {
       >
         {selectedTopic && (
           <div className="space-y-6">
+            {/* Send to Chatbot Button */}
+            <div className="flex justify-end">
+              <Button
+                variant="secondary"
+                onClick={handleSendToChatbot}
+                className="flex items-center gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Ask AI About This
+              </Button>
+            </div>
+
             {/* Content */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">Explanation</h3>
               <p className="text-gray-700">{selectedTopic.content}</p>
             </div>
+
+            {/* Key Points */}
+            {selectedTopic.keyPoints && selectedTopic.keyPoints.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Key Points</h3>
+                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                  {selectedTopic.keyPoints.map((point, i) => (
+                    <li key={i}>{point}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Examples */}
+            {selectedTopic.examples && selectedTopic.examples.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Examples</h3>
+                <div className="space-y-2">
+                  {selectedTopic.examples.map((example, i) => (
+                    <div key={i} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-gray-700">{example}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Summary */}
+            {selectedTopic.summary && (
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-2">Summary</h3>
+                <p className="text-gray-700 bg-green-50 p-3 rounded-lg border border-green-200">
+                  {selectedTopic.summary}
+                </p>
+              </div>
+            )}
+
+            {/* AI Simplify Button */}
+            <Button
+              variant="secondary"
+              className="w-full flex items-center justify-center gap-2"
+              onClick={() => {
+                setChatbotContext({
+                  title: selectedTopic.name,
+                  content: selectedTopic.content
+                });
+                setShowChatbot(true);
+              }}
+            >
+              <Sparkles className="w-4 h-4" />
+              Explain Simply with AI
+            </Button>
 
             {/* Questions */}
             <div>
@@ -206,6 +307,13 @@ const Courses = () => {
           </div>
         )}
       </Modal>
+
+      {/* Chatbot Panel */}
+      <ChatbotPanel
+        isOpen={showChatbot}
+        onClose={() => setShowChatbot(false)}
+        context={chatbotContext}
+      />
     </div>
   );
 };

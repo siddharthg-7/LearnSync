@@ -136,6 +136,18 @@ export const initializeMockData = () => {
       chapterId: 1,
       name: 'Introduction to Fractions',
       content: 'A fraction represents a part of a whole. It has two parts: numerator (top) and denominator (bottom).',
+      keyPoints: [
+        'A fraction has two parts: numerator and denominator',
+        'The numerator is the top number',
+        'The denominator is the bottom number',
+        'Fractions represent parts of a whole'
+      ],
+      examples: [
+        'If you cut a pizza into 4 slices and eat 1, you ate 1/4 of the pizza',
+        '1/2 means one part out of two equal parts',
+        '3/4 means three parts out of four equal parts'
+      ],
+      summary: 'Fractions are a way to represent parts of a whole. Understanding numerator and denominator is key to working with fractions.',
       difficulty: 'basic',
       xpReward: 50,
       questions: [
@@ -148,6 +160,18 @@ export const initializeMockData = () => {
       chapterId: 1,
       name: 'Adding Fractions',
       content: 'To add fractions with the same denominator, add the numerators and keep the denominator.',
+      keyPoints: [
+        'Only add numerators, keep denominator same',
+        'Denominators must be equal',
+        'Simplify the result if possible',
+        'Check if the answer can be reduced'
+      ],
+      examples: [
+        '1/4 + 2/4 = 3/4 (add 1+2, keep 4)',
+        '2/5 + 1/5 = 3/5 (add 2+1, keep 5)',
+        '1/8 + 3/8 = 4/8 = 1/2 (simplify)'
+      ],
+      summary: 'Adding fractions with the same denominator is simple: add the numerators and keep the denominator unchanged.',
       difficulty: 'basic',
       xpReward: 50,
       questions: [
@@ -160,6 +184,18 @@ export const initializeMockData = () => {
       chapterId: 1,
       name: 'Subtracting Fractions',
       content: 'To subtract fractions with the same denominator, subtract the numerators and keep the denominator.',
+      keyPoints: [
+        'Subtract numerators, keep denominator',
+        'Denominators must be equal',
+        'Result can be simplified',
+        'Always check for simplification'
+      ],
+      examples: [
+        '3/4 - 1/4 = 2/4 = 1/2',
+        '4/5 - 2/5 = 2/5',
+        '5/6 - 1/6 = 4/6 = 2/3'
+      ],
+      summary: 'Subtracting fractions follows the same rule as addition: work with numerators while keeping the denominator constant.',
       difficulty: 'intermediate',
       xpReward: 60,
       questions: [
