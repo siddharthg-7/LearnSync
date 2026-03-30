@@ -21,6 +21,11 @@ const Layout = ({ children, onLogout }) => {
   }, []);
   const location = useLocation();
 
+  // Reset chatbot when navigating to a different page
+  useEffect(() => {
+    setShowChatbot(false);
+  }, [location.pathname]);
+
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
@@ -105,7 +110,10 @@ const Layout = ({ children, onLogout }) => {
               <Link
                 key={item.name}
                 to={item.path}
-                onClick={() => setSidebarOpen(false)} // Close sidebar on mobile after click
+                onClick={() => {
+                  setSidebarOpen(false);
+                  setShowChatbot(false); // Close AI Tutor when navigating
+                }}
                 className={`flex items-center gap-3 px-3 md:px-4 py-2 md:py-3 rounded-xl transition-colors ${
                   isActive 
                     ? 'bg-blue-50 text-blue-600' 

@@ -4,24 +4,36 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import Modal from '../../components/Modal';
 import ProgressBar from '../../components/ProgressBar';
-import { User, TrendingUp, Target, Calendar, FileText, AlertCircle } from 'lucide-react';
+import { User, TrendingUp, Target, Calendar, FileText, AlertCircle, AlertTriangle, Send, CheckCircle } from 'lucide-react';
+
+const ISSUE_TYPES = [
+  'Learning Difficulty',
+  'Attendance Concern',
+  'Behavioral Issue',
+  'Personal Issues',
+  'Health Concern',
+  'Financial Constraint',
+  'Other',
+];
 
 const Students = () => {
-  const { appData, currentUser, updateStudent } = useApp();
+  const { appData, currentUser, updateStudent, addNotification } = useApp();
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [notes, setNotes] = useState('');
 
+  // Report to NGO state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportStudent, setReportStudent] = useState(null);
+  const [reportIssue, setReportIssue] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportPriority, setReportPriority] = useState('high');
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+
   const mentor = appData.mentors.find(m => m.id === currentUser?.id) || appData.mentors[0];
   const assignedStudents = appData.students.filter(s => {
-    // First try to match by mentor's assignedStudents array
-    if (mentor.assignedStudents && mentor.assignedStudents.includes(s.id)) {
-      return true;
-    }
-    // Fallback: check if student's mentorId matches this mentor
-    if (s.mentorId === mentor.id) {
-      return true;
-    }
+    if (mentor.assignedStudents && mentor.assignedStudents.includes(s.id)) return true;
+    if (s.mentorId === mentor.id) return true;
     return false;
   });
 
@@ -38,7 +50,32 @@ const Students = () => {
     }
   };
 
-  // Get quiz history for student
+  // Report to NGO handlers
+  const handleOpenReport = (student) => {
+    setReportStudent(student);
+    setReportIssue('');
+    setReportDescription('');
+    setReportPriority('high');
+    setReportSubmitted(false);
+    setShowReportModal(true);
+  };
+
+  const handleSubmitReport = () => {
+    if (!reportIssue || !reportDescription.trim()) return;
+
+    addNotification({
+      type: 'student-flag',
+      priority: reportPriority,
+      flaggedBy: mentor.name,
+      student: reportStudent.name,
+      studentId: reportStudent.id,
+      issue: reportIssue,
+      description: reportDescription.trim(),
+    });
+
+    setReportSubmitted(true);
+  };
+
   const getQuizHistory = (studentId) => {
     return appData.sessions
       .filter(s => s.studentId === studentId && s.score)
@@ -65,8 +102,18 @@ const Students = () => {
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <User className="w-6 h-6 text-blue-600" />
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{student.name}</h3>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900">{student.name}</h3>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleOpenReport(student); }}
+                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-colors"
+                    title="Report this student's issue to NGO Administrator"
+                  >
+                    <AlertTriangle className="w-3 h-3" />
+                    Report to NGO
+                  </button>
+                </div>
                 <p className="text-sm text-gray-500">Age {student.age} • Class {student.class}</p>
               </div>
             </div>
@@ -220,8 +267,144 @@ const Students = () => {
               <Button onClick={handleSaveNotes} className="flex-1">
                 Save Notes
               </Button>
-              <Button variant="secondary" onClick={() => setShowDetailModal(false)} className="flex-1">
-                Close
+              <Button
+                variant="danger"
+                onClick={() => { setShowDetailModal(false); handleOpenReport(selectedStudent); }}
+                className="flex-1 flex items-center justify-center gap-2"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                Report to NGO
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ── Report to NGO Modal ──────────────────────────────────────────── */}
+      <Modal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        title={reportSubmitted ? 'Report Submitted' : `Report ${reportStudent?.name || 'Student'} to NGO`}
+      >
+        {reportSubmitted ? (
+          /* Success state */
+          <div className="text-center py-6 space-y-4">
+            <div className="inline-flex p-4 bg-green-100 rounded-full">
+              <CheckCircle className="w-10 h-10 text-green-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Report Sent Successfully</h3>
+            <p className="text-sm text-gray-600 max-w-sm mx-auto">
+              Your report about <strong>{reportStudent?.name}</strong> has been sent to the NGO Administrator.
+              They will review it and take appropriate action.
+            </p>
+            <div className="p-3 bg-gray-50 rounded-xl text-left">
+              <p className="text-xs text-gray-500 mb-1">Issue reported</p>
+              <p className="text-sm font-medium text-gray-900">{reportIssue}</p>
+              <p className="text-xs text-gray-500 mt-2 mb-1">Priority</p>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                reportPriority === 'high' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+              }`}>{reportPriority}</span>
+            </div>
+            <Button onClick={() => setShowReportModal(false)} className="w-full mt-4">
+              Done
+            </Button>
+          </div>
+        ) : (
+          /* Report form */
+          <div className="space-y-5">
+            {/* Student info banner */}
+            {reportStudent && (
+              <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-blue-700" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">{reportStudent.name}</p>
+                  <p className="text-xs text-gray-500">Age {reportStudent.age} • Class {reportStudent.class} • {reportStudent.level} level</p>
+                </div>
+              </div>
+            )}
+
+            {/* Issue type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Issue Type *</label>
+              <div className="grid grid-cols-2 gap-2">
+                {ISSUE_TYPES.map(issue => (
+                  <button
+                    key={issue}
+                    onClick={() => setReportIssue(issue)}
+                    className={`px-3 py-2 text-sm rounded-lg border transition-all text-left ${
+                      reportIssue === issue
+                        ? 'border-red-400 bg-red-50 text-red-800 font-medium'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {issue}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setReportPriority('high')}
+                  className={`flex-1 px-4 py-2 text-sm rounded-lg border transition-all ${
+                    reportPriority === 'high'
+                      ? 'border-red-400 bg-red-50 text-red-800 font-medium'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  🔴 High
+                </button>
+                <button
+                  onClick={() => setReportPriority('medium')}
+                  className={`flex-1 px-4 py-2 text-sm rounded-lg border transition-all ${
+                    reportPriority === 'medium'
+                      ? 'border-yellow-400 bg-yellow-50 text-yellow-800 font-medium'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  🟡 Medium
+                </button>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Describe the Issue *</label>
+              <textarea
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-400 h-32 text-sm"
+                placeholder="Explain the problem in detail. What have you tried? Why does this need NGO intervention? ..."
+              />
+              <p className="text-xs text-gray-400 mt-1">{reportDescription.length} characters</p>
+            </div>
+
+            {/* Info box */}
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <p className="text-xs text-yellow-800">
+                <strong>Note:</strong> This report will be sent to the NGO Administrator as a high-priority notification.
+                They will review it and may contact you for further details.
+              </p>
+            </div>
+
+            {/* Submit */}
+            <div className="flex gap-2">
+              <Button
+                variant="danger"
+                onClick={handleSubmitReport}
+                disabled={!reportIssue || !reportDescription.trim()}
+                className="flex-1 flex items-center justify-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                Submit Report
+              </Button>
+              <Button variant="secondary" onClick={() => setShowReportModal(false)} className="flex-1">
+                Cancel
               </Button>
             </div>
           </div>

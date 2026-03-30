@@ -4,6 +4,14 @@ import { db } from '../config/firebase';
 import * as firestoreService from '../services/firestore';
 import { storage } from '../utils/storage';
 import { seedFirestore, isDatabaseEmpty } from '../utils/seedFirestore';
+import {
+  MOCK_APP_STUDENTS,
+  MOCK_APP_MENTORS,
+  MOCK_APP_COURSES,
+  MOCK_SESSIONS,
+  MOCK_DOUBTS,
+  mockNotifications as INITIAL_NOTIFICATIONS,
+} from '../utils/mockData';
 
 const AppContext = createContext();
 
@@ -32,6 +40,13 @@ export const AppProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Shared notifications state — persisted in localStorage so reports survive
+  // account switches (mentor → admin demo flow)
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('learnsync-notifications');
+    return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+  });
+
   const loadInitialData = async () => {
     try {
       setLoading(true);
@@ -44,9 +59,7 @@ export const AppProvider = ({ children }) => {
 
       // Load saved doubts from localStorage (persisted across sessions)
       const savedDoubts = localStorage.getItem('learnsync-doubts');
-      const doubts = savedDoubts ? JSON.parse(savedDoubts) : [
-        { id: 'doubt_1', studentId: 'student_1', studentName: 'Priya', subject: 'Math', topic: 'Fractions', question: 'How do I solve fraction addition?', status: 'open', replies: [], date: '2026-03-29', createdAt: '2026-03-29' },
-      ];
+      const doubts = savedDoubts ? JSON.parse(savedDoubts) : MOCK_DOUBTS;
 
       // Load persisted courses/chapters/topics from localStorage
       const savedCourses = JSON.parse(localStorage.getItem('learnsync-courses') || '[]');
@@ -321,6 +334,46 @@ export const AppProvider = ({ children }) => {
     return { success: true };
   };
 
+  // ── Notification helpers ────────────────────────────────────────────────
+  const addNotification = (notification) => {
+    const newNotif = {
+      ...notification,
+      id: `notif_${Date.now()}`,
+      status: 'unread',
+      date: new Date().toISOString().split('T')[0],
+    };
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev];
+      localStorage.setItem('learnsync-notifications', JSON.stringify(updated));
+      return updated;
+    });
+    return { success: true, id: newNotif.id };
+  };
+
+  const updateNotification = (id, updates) => {
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === id ? { ...n, ...updates } : n);
+      localStorage.setItem('learnsync-notifications', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const dismissNotification = (id) => {
+    setNotifications(prev => {
+      const updated = prev.filter(n => n.id !== id);
+      localStorage.setItem('learnsync-notifications', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, status: 'read' }));
+      localStorage.setItem('learnsync-notifications', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const addStudyPlan = async (plan) => {
     const result = await firestoreService.createStudyPlan(plan.studentId, plan);
 
@@ -347,6 +400,7 @@ export const AppProvider = ({ children }) => {
     currentRole,
     loading,
     error,
+    notifications,
     updateCurrentUser,
     switchRole,
     addStudent,
@@ -359,6 +413,10 @@ export const AppProvider = ({ children }) => {
     addSession,
     addDoubt,
     updateDoubt,
+    addNotification,
+    updateNotification,
+    dismissNotification,
+    markAllNotificationsRead,
     addStudyPlan,
     updateStudyPlan,
     refreshData
