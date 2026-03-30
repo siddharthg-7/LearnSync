@@ -130,9 +130,8 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
         content: cleanedResponse
       }]);
       
-      if (autoSpeak) {
-        speakText(cleanedResponse);
-      }
+      // Always speak back when question was asked via voice
+      speakText(cleanedResponse);
       
       if (conversationCount + 1 >= 2 && !showQuiz && !quizSubmitted) {
         setTimeout(() => {
@@ -141,9 +140,7 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
             role: 'assistant',
             content: quizSuggestion
           }]);
-          if (autoSpeak) {
-            speakText(quizSuggestion);
-          }
+          speakText(quizSuggestion);
         }, 1000);
       }
     } catch {
@@ -154,7 +151,7 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
     } finally {
       setLoading(false);
     }
-  }, [context, autoSpeak, conversationCount, showQuiz, quizSubmitted, speakText]);
+  }, [context, conversationCount, showQuiz, quizSubmitted, speakText]);
 
   // Initialize speech recognition and synthesis
   useEffect(() => {
@@ -322,19 +319,37 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
     setShowQuiz(true);
     
     try {
-      const topicContext = context ? `Topic: ${context.title}\nContent: ${context.content}` : 
-        `Based on our conversation about the topics discussed`;
+      // Build context from actual conversation history
+      const conversationHistory = messages
+        .filter(m => m.role === 'user' || m.role === 'assistant')
+        .map(m => `${m.role === 'user' ? 'Student' : 'AI Tutor'}: ${m.content}`)
+        .join('\n');
+      
+      const topicContext = context 
+        ? `Topic: ${context.title}\nContent: ${context.content}\n\nConversation so far:\n${conversationHistory}` 
+        : `Conversation so far:\n${conversationHistory}`;
       
       const prompt = `${topicContext}
 
-Generate a quiz with 3 multiple-choice questions to test understanding. 
-Respond ONLY with valid JSON in this exact format, no additional text:
+Based ONLY on the conversation above, generate a quiz with 3 multiple-choice questions that test the student's understanding of what was actually discussed. The questions must be specific to the topics covered in the conversation, not generic.
+
+Respond ONLY with valid JSON in this exact format, no additional text before or after:
 {
   "questions": [
     {
-      "question": "Question text here",
+      "question": "A specific question based on what was discussed",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correct": 0
+    },
+    {
+      "question": "Another specific question based on the conversation",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 1
+    },
+    {
+      "question": "A third specific question about the discussed topic",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 2
     }
   ]
 }`;
@@ -342,44 +357,25 @@ Respond ONLY with valid JSON in this exact format, no additional text:
       const response = await callGemini(prompt);
       
       let quizData;
-      try {
-        const jsonMatch = response.data.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          quizData = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error('No JSON found');
-        }
-      } catch {
-        quizData = {
-          questions: [
-            {
-              question: `What is the main concept we discussed about ${context?.title || 'this topic'}?`,
-              options: ['Concept A', 'Concept B', 'Concept C', 'Concept D'],
-              correct: 0
-            },
-            {
-              question: 'Which statement best describes what we learned?',
-              options: ['Statement A', 'Statement B', 'Statement C', 'Statement D'],
-              correct: 1
-            },
-            {
-              question: 'How would you apply this knowledge?',
-              options: ['Application A', 'Application B', 'Application C', 'Application D'],
-              correct: 2
-            }
-          ]
-        };
+      const jsonMatch = response.data.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        quizData = JSON.parse(jsonMatch[0]);
+      }
+      
+      if (!quizData || !quizData.questions || quizData.questions.length === 0) {
+        throw new Error('Could not generate quiz questions');
       }
       
       setGeneratedQuiz(quizData);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `I've created a quiz to test your understanding. Please answer the questions below.`
+        content: `I've created a quiz based on what we just discussed. Answer the questions below!`
       }]);
-    } catch {
+    } catch (err) {
+      console.error('Quiz generation error:', err);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'I had trouble creating the quiz. Please try again.'
+        content: 'I had trouble creating the quiz. Please try asking me more questions first, then try again.'
       }]);
       setShowQuiz(false);
     } finally {
@@ -450,7 +446,8 @@ Respond ONLY with valid JSON in this exact format, no additional text:
         content: cleanedResponse
       }]);
       
-      if (autoSpeak) {
+      // Speak back if voice mode or auto-speak is on
+      if (autoSpeak || voiceModeEnabled) {
         speakText(cleanedResponse);
       }
       
@@ -461,7 +458,7 @@ Respond ONLY with valid JSON in this exact format, no additional text:
             role: 'assistant',
             content: quizSuggestion
           }]);
-          if (autoSpeak) {
+          if (autoSpeak || voiceModeEnabled) {
             speakText(quizSuggestion);
           }
         }, 1000);

@@ -42,11 +42,11 @@ let app, db, auth;
 try {
   app = initializeApp(firebaseConfig);
   console.log('✅ Firebase initialized successfully');
-  
+
   // Initialize Firestore
   db = getFirestore(app);
   console.log('✅ Firestore initialized successfully');
-  
+
   // Initialize Auth
   auth = getAuth(app);
   console.log('✅ Firebase Auth initialized successfully');

@@ -78,7 +78,7 @@ const Doubts = () => {
                     ? 'bg-green-100 text-green-600'
                     : 'bg-yellow-100 text-yellow-600'
                 }`}>
-                  {doubt.status === 'resolved' ? 'Resolved' : 'Pending'}
+                  {doubt.status === 'resolved' ? 'Resolved' : 'Open'}
                 </span>
               </div>
 

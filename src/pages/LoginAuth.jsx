@@ -142,15 +142,22 @@ const LoginAuth = ({ onLogin }) => {
     setLoading(true);
     
     try {
-      const result = await signIn(user.email, user.password);
+      // Bypass Firebase auth entirely for demo accounts
+      const mockUserData = {
+        id: `demo-${user.name.toLowerCase().replace(/[^a-z]/g, '')}`,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        onboarded: user.role === 'student' ? true : (user.role === 'mentor' ? true : true),
+        ...(user.age && { age: user.age }),
+        ...(user.class && { class: user.class }),
+        ...(user.level && { level: user.level }),
+        ...(user.subjects && { subjects: user.subjects }),
+      };
       
-      if (result.success) {
-        onLogin(result.user, result.role);
-      } else {
-        setError(result.error);
-      }
+      onLogin(mockUserData, user.role);
     } catch {
-      setError('Mock user login failed. Please create this account first.');
+      setError('Demo login failed. Please try again.');
     } finally {
       setLoading(false);
     }

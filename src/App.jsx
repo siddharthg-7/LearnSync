@@ -36,6 +36,11 @@ const AppRoutes = () => {
         updateCurrentUser(user);
         switchRole(user.role);
       } else {
+        // Don't reset if we have a demo user logged in
+        if (currentUser?.id?.startsWith('demo-')) {
+          setAuthLoading(false);
+          return;
+        }
         updateCurrentUser(null);
       }
       setAuthLoading(false);
