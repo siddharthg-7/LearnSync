@@ -1,7 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Sparkles, Brain, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Send, Sparkles, Brain, Mic, MicOff, Volume2, VolumeX, Globe } from 'lucide-react';
 import { callGemini } from '../utils/gemini';
 import Button from './Button';
+
+const LANGUAGES = [
+  { code: 'en-US', label: 'English', flag: '🇬🇧', ttsLang: 'en', geminiInstruction: 'Respond in English.' },
+  { code: 'hi-IN', label: 'हिन्दी', flag: '🇮🇳', ttsLang: 'hi', geminiInstruction: 'Respond in Hindi (हिन्दी). Use Devanagari script.' },
+  { code: 'te-IN', label: 'తెలుగు', flag: '🇮🇳', ttsLang: 'te', geminiInstruction: 'Respond in Telugu (తెలుగు). Use Telugu script.' },
+];
 
 const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentId = null }) => {
   const [messages, setMessages] = useState([]);
@@ -17,40 +23,68 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [voiceModeEnabled, setVoiceModeEnabled] = useState(false);
   const [voiceError, setVoiceError] = useState('');
+  const [selectedLang, setSelectedLang] = useState(LANGUAGES[0]);
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
   const synthRef = useRef(null);
   const errorTimeoutRef = useRef(null);
+  const ttsAudioRef = useRef(null);
 
-  // Text-to-Speech: Speak the text
+  // Split text into speakable chunks (Google TTS has ~200 char limit)
+  const chunkText = (text, maxLen = 190) => {
+    const chunks = [];
+    let rest = text;
+    while (rest.length > 0) {
+      if (rest.length <= maxLen) { chunks.push(rest); break; }
+      let i = rest.lastIndexOf('।', maxLen);  // Hindi/Telugu sentence end
+      if (i < 30) i = rest.lastIndexOf('.', maxLen);
+      if (i < 30) i = rest.lastIndexOf(' ', maxLen);
+      if (i < 30) i = maxLen;
+      chunks.push(rest.substring(0, i + 1).trim());
+      rest = rest.substring(i + 1).trim();
+    }
+    return chunks;
+  };
+
+  // Text-to-Speech: Speak in any language
   const speakText = useCallback((text) => {
-    if (!synthRef.current) {
+    if (!text) return;
+
+    // Stop any current playback
+    if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+    // For English, use native browser TTS
+    if (selectedLang.ttsLang === 'en') {
+      if (!('speechSynthesis' in window)) return;
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      synth.speak(utterance);
       return;
     }
 
-    synthRef.current.cancel();
+    // For Hindi/Telugu, use Google Translate TTS
+    const langCode = selectedLang.ttsLang; // 'hi' or 'te'
+    const chunks = chunkText(text);
+    let idx = 0;
+    setIsSpeaking(true);
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-    
-    const voices = synthRef.current.getVoices();
-    const preferredVoice = voices.find(voice => 
-      voice.name.includes('Female') || 
-      voice.name.includes('Samantha') ||
-      voice.name.includes('Google US English')
-    );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    synthRef.current.speak(utterance);
-  }, []);
+    const playNext = () => {
+      if (idx >= chunks.length) { setIsSpeaking(false); return; }
+      const q = encodeURIComponent(chunks[idx]);
+      const audio = new Audio(`/tts-api?q=${q}&tl=${langCode}`);
+      ttsAudioRef.current = audio;
+      audio.onended = () => { idx++; playNext(); };
+      audio.onerror = () => { console.error('[TTS] Audio chunk failed'); idx++; playNext(); };
+      audio.play().catch(err => { console.error('[TTS] Play error:', err); setIsSpeaking(false); });
+    };
+    playNext();
+  }, [selectedLang]);
 
   const stopRecognition = useCallback(() => {
     if (recognitionRef.current) {
@@ -108,11 +142,12 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
 
     try {
       let prompt = userMessage;
+      const langInstr = selectedLang.geminiInstruction;
       
       if (context) {
-        prompt = `Topic: ${context.title}\nContent: ${context.content}\n\nStudent question: ${userMessage}\n\nProvide a clear, concise explanation in plain text. Do not use asterisks, markdown formatting, or special characters. Write in simple paragraphs.`;
+        prompt = `${langInstr}\nTopic: ${context.title}\nContent: ${context.content}\n\nStudent question: ${userMessage}\n\nProvide a clear, concise explanation in plain text. Do not use asterisks, markdown formatting, or special characters. Write in simple paragraphs.`;
       } else {
-        prompt = `Student asks: ${userMessage}\n\nProvide a helpful, educational response in plain text. Do not use asterisks, markdown formatting, bullet points, or special characters. Write in simple, clear paragraphs suitable for a student.`;
+        prompt = `${langInstr}\nStudent asks: ${userMessage}\n\nProvide a helpful, educational response in plain text. Do not use asterisks, markdown formatting, bullet points, or special characters. Write in simple, clear paragraphs suitable for a student.`;
       }
 
       const response = await callGemini(prompt);
@@ -160,7 +195,7 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
-      recognitionRef.current.lang = 'en-US';
+      recognitionRef.current.lang = selectedLang.code;
       recognitionRef.current.maxAlternatives = 1;
 
       recognitionRef.current.onstart = () => {
@@ -222,8 +257,11 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
       };
     }
 
+    // Initialize speech synthesis
     if ('speechSynthesis' in window) {
       synthRef.current = window.speechSynthesis;
+      // Force load voices
+      synthRef.current.getVoices();
     }
 
     return () => {
@@ -237,7 +275,7 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
         clearTimeout(errorTimeoutRef.current);
       }
     };
-  }, [handleSendVoiceMessage]);
+  }, [handleSendVoiceMessage, selectedLang]);
 
   useEffect(() => {
     if (context) {
@@ -301,10 +339,9 @@ const ChatbotPanel = ({ isOpen, context = null, onQuizGenerated = null, studentI
   };
 
   const stopSpeaking = () => {
-    if (synthRef.current) {
-      synthRef.current.cancel();
-      setIsSpeaking(false);
-    }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (ttsAudioRef.current) { ttsAudioRef.current.pause(); ttsAudioRef.current = null; }
+    setIsSpeaking(false);
   };
 
   const toggleAutoSpeak = () => {
@@ -424,11 +461,12 @@ Respond ONLY with valid JSON in this exact format, no additional text before or 
 
     try {
       let prompt = userMessage;
+      const langInstr = selectedLang.geminiInstruction;
       
       if (context) {
-        prompt = `Topic: ${context.title}\nContent: ${context.content}\n\nStudent question: ${userMessage}\n\nProvide a clear, concise explanation in plain text. Do not use asterisks, markdown formatting, or special characters. Write in simple paragraphs.`;
+        prompt = `${langInstr}\nTopic: ${context.title}\nContent: ${context.content}\n\nStudent question: ${userMessage}\n\nProvide a clear, concise explanation in plain text. Do not use asterisks, markdown formatting, or special characters. Write in simple paragraphs.`;
       } else {
-        prompt = `Student asks: ${userMessage}\n\nProvide a helpful, educational response in plain text. Do not use asterisks, markdown formatting, bullet points, or special characters. Write in simple, clear paragraphs suitable for a student.`;
+        prompt = `${langInstr}\nStudent asks: ${userMessage}\n\nProvide a helpful, educational response in plain text. Do not use asterisks, markdown formatting, bullet points, or special characters. Write in simple, clear paragraphs suitable for a student.`;
       }
 
       const response = await callGemini(prompt);
