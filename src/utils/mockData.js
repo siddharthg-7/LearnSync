@@ -1,80 +1,3 @@
-// Mock data initialization
-export const initializeMockData = () => {
-  const mockStudents = [
-    {
-      id: 1,
-      name: 'Aarav Kumar',
-      age: 12,
-      class: '7th',
-      subjects: ['Math', 'Science', 'English'],
-      availability: ['Mon 4PM', 'Wed 4PM', 'Fri 4PM'],
-      level: 'growth',
-      weakTopics: { Math: ['fractions', 'decimals'], Science: ['photosynthesis'] },
-      strongTopics: { Math: ['addition'], English: ['grammar'] },
-      mentorId: 1,
-      progress: 65,
-      xp: 450,
-      level_number: 5,
-      streak: 7,
-      attendance: 85,
-      completedTopics: [1, 2, 4, 5, 10, 11, 19, 20, 23, 24, 27],
-      onboarded: true
-    },
-    {
-      id: 2,
-      name: 'Priya Sharma',
-      age: 9,
-      class: '4th',
-      subjects: ['Math', 'English'],
-      availability: ['Tue 5PM', 'Thu 5PM'],
-      level: 'foundation',
-      weakTopics: { Math: ['subtraction'], English: ['reading'] },
-      strongTopics: { Math: ['counting'] },
-      mentorId: 2,
-      progress: 45,
-      xp: 280,
-      level_number: 3,
-      streak: 3,
-      attendance: 70,
-      completedTopics: [1, 2, 3, 8, 10],
-      onboarded: true
-    },
-    {
-      id: 3,
-      name: 'Rohan Patel',
-      age: 16,
-      class: '11th',
-      subjects: ['Math', 'Science', 'English'],
-      availability: ['Mon 6PM', 'Wed 6PM', 'Sat 10AM'],
-      level: 'mastery',
-      weakTopics: { Math: ['calculus'], Science: ['organic chemistry'] },
-      strongTopics: { Math: ['algebra'], English: ['essay writing'] },
-      mentorId: 1,
-      progress: 78,
-      xp: 890,
-      level_number: 9,
-      streak: 12,
-      attendance: 92,
-      completedTopics: [1, 2, 3, 4, 5, 6, 7, 10, 11, 19, 20, 21, 33, 34, 35, 37, 38, 45, 46, 47],
-      onboarded: true
-    }
-  ];
-  
-  return {
-    students: mockStudents,
-    mentors: [],
-    courses: [],
-    chapters: [],
-    topics: [],
-    sessions: [],
-    doubts: [],
-    studyPlans: [],
-    analytics: {},
-    currentUser: null,
-    currentRole: 'student'
-  };
-};
-
 // ─────────────────────────────────────────────────────────────────────────────
 // SECTION 1: Canonical app-level students
 // Used by: AppContext (appData.students), seedFirestore, LoginAuth demo cards
@@ -307,12 +230,12 @@ export const DEMO_USERS = [
 // Used by: AdminMentors, AdminStudents, AdminNotifications, Modules, MentorCourses
 // ─────────────────────────────────────────────────────────────────────────────
 export const mockMentors = [
-  { id: 1, name: 'Priya Sharma',  subjects: ['Math', 'Science'],   studentsAssigned: 8,  sessionsCompleted: 24, avgImprovement: 18, effectivenessScore: 87, attendance: 92, status: 'active',          progress: 87 },
-  { id: 2, name: 'Rahul Verma',   subjects: ['English', 'Math'],   studentsAssigned: 6,  sessionsCompleted: 18, avgImprovement: 12, effectivenessScore: 74, attendance: 85, status: 'active',          progress: 74 },
-  { id: 3, name: 'Anita Desai',   subjects: ['Science'],           studentsAssigned: 5,  sessionsCompleted: 10, avgImprovement: 6,  effectivenessScore: 48, attendance: 70, status: 'low-performing', progress: 48 },
-  { id: 4, name: 'Karan Mehta',   subjects: ['Math'],              studentsAssigned: 7,  sessionsCompleted: 20, avgImprovement: 15, effectivenessScore: 81, attendance: 90, status: 'active',          progress: 81 },
-  { id: 5, name: 'Sneha Patil',   subjects: ['English'],           studentsAssigned: 4,  sessionsCompleted: 8,  avgImprovement: 4,  effectivenessScore: 42, attendance: 65, status: 'low-performing', progress: 42 },
-  { id: 6, name: 'Amit Joshi',    subjects: ['Science', 'Math'],   studentsAssigned: 9,  sessionsCompleted: 28, avgImprovement: 20, effectivenessScore: 93, attendance: 96, status: 'active',          progress: 93 },
+  { id: 1, name: 'Priya Sharma',  subjects: ['Math', 'Science'],   studentsAssigned: 8,  sessionsCompleted: 24, avgImprovement: 18, effectivenessScore: 87, attendance: 92, status: 'active',          progress: 87, education: 'M.Sc Mathematics', skillLevel: 'Advanced', experience: 5, teachingCapacity: 10 },
+  { id: 2, name: 'Rahul Verma',   subjects: ['English', 'Math'],   studentsAssigned: 6,  sessionsCompleted: 18, avgImprovement: 12, effectivenessScore: 74, attendance: 85, status: 'active',          progress: 74, education: 'B.A English Literature', skillLevel: 'Intermediate', experience: 3, teachingCapacity: 8 },
+  { id: 3, name: 'Anita Desai',   subjects: ['Science'],           studentsAssigned: 5,  sessionsCompleted: 10, avgImprovement: 6,  effectivenessScore: 48, attendance: 70, status: 'low-performing', progress: 48, education: 'B.Sc Biology', skillLevel: 'Beginner', experience: 1, teachingCapacity: 5 },
+  { id: 4, name: 'Karan Mehta',   subjects: ['Math'],              studentsAssigned: 7,  sessionsCompleted: 20, avgImprovement: 15, effectivenessScore: 81, attendance: 90, status: 'active',          progress: 81, education: 'M.Sc Applied Mathematics', skillLevel: 'Advanced', experience: 4, teachingCapacity: 9 },
+  { id: 5, name: 'Sneha Patil',   subjects: ['English'],           studentsAssigned: 4,  sessionsCompleted: 8,  avgImprovement: 4,  effectivenessScore: 42, attendance: 65, status: 'low-performing', progress: 42, education: 'B.A English', skillLevel: 'Beginner', experience: 1, teachingCapacity: 5 },
+  { id: 6, name: 'Amit Joshi',    subjects: ['Science', 'Math'],   studentsAssigned: 9,  sessionsCompleted: 28, avgImprovement: 20, effectivenessScore: 93, attendance: 96, status: 'active',          progress: 93, education: 'Ph.D Physics', skillLevel: 'Expert', experience: 8, teachingCapacity: 12 },
 ];
 
 export const mockStudents = [

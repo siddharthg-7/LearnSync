@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Search, ChevronUp, ChevronDown, Trash2, X, User, BookOpen, Calendar, TrendingUp, AlertTriangle } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { mockStudents, mockMentors } from '../../utils/mockData'
 
 function ProgressBar({ value }) {
   const color = value >= 75 ? 'bg-green-500' : value >= 50 ? 'bg-blue-500' : 'bg-red-400'
@@ -169,16 +170,9 @@ export default function AdminStudents() {
   const [confirmId, setConfirmId] = useState(null)
   const [selected, setSelected] = useState(null)
   
-  // Filter out demo users (those with IDs like 'student_1', 'student_2', etc.)
-  const realStudents = appData.students.filter(s => {
-    // Demo users have IDs like 'student_1', 'student_2', 'student_3'
-    // Real users have IDs from Firestore (longer strings or different format)
-    return !s.id.match(/^student_\d+$/)
-  })
-  
-  const realMentors = appData.mentors.filter(m => {
-    return !m.id.match(/^mentor_\d+$/)
-  })
+  // Use admin-level mockStudents / mockMentors (richer dataset for admin views)
+  const realStudents = mockStudents
+  const realMentors = mockMentors
 
   const handleSort = (key) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -198,16 +192,16 @@ export default function AdminStudents() {
 
   const filtered = realStudents
     .filter(s => {
-      const mentor = realMentors.find(m => m.id === s.mentorId)
-      const mentorName = mentor ? mentor.name : ''
+      const mentorName = s.assignedMentor || ''
       return s.name.toLowerCase().includes(search.toLowerCase()) ||
         mentorName.toLowerCase().includes(search.toLowerCase()) ||
         (s.subjects || []).some(sub => sub.toLowerCase().includes(search.toLowerCase()))
     })
     .sort((a, b) => {
       const dir = sortDir === 'asc' ? 1 : -1
-      const aVal = a[sortKey] || 0
-      const bVal = b[sortKey] || 0
+      const mapKey = sortKey === 'progress' ? 'overallProgress' : sortKey
+      const aVal = a[mapKey] || 0
+      const bVal = b[mapKey] || 0
       return (aVal > bVal ? 1 : -1) * dir
     })
 
@@ -216,7 +210,7 @@ export default function AdminStudents() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Students</h2>
-          <p className="text-sm text-gray-500">{realStudents.length} students enrolled (excluding demo accounts)</p>
+          <p className="text-sm text-gray-500">{realStudents.length} students enrolled</p>
         </div>
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -227,9 +221,9 @@ export default function AdminStudents() {
 
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">Total Students</p><p className="text-2xl font-semibold text-gray-900 mt-1">{realStudents.length}</p></div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">Avg Progress</p><p className="text-2xl font-semibold text-blue-600 mt-1">{realStudents.length > 0 ? Math.round(realStudents.reduce((s, st) => s + (st.progress || 0), 0) / realStudents.length) : 0}%</p></div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">Avg Progress</p><p className="text-2xl font-semibold text-blue-600 mt-1">{realStudents.length > 0 ? Math.round(realStudents.reduce((s, st) => s + (st.overallProgress || 0), 0) / realStudents.length) : 0}%</p></div>
         <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">Avg Attendance</p><p className="text-2xl font-semibold text-green-600 mt-1">{realStudents.length > 0 ? Math.round(realStudents.reduce((s, st) => s + (st.attendance || 0), 0) / realStudents.length) : 0}%</p></div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">With Mentors</p><p className="text-2xl font-semibold text-purple-600 mt-1">{realStudents.filter(s => s.mentorId).length}</p></div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">With Mentors</p><p className="text-2xl font-semibold text-purple-600 mt-1">{realStudents.filter(s => s.assignedMentor).length}</p></div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -243,11 +237,11 @@ export default function AdminStudents() {
                 <span className="flex items-center gap-1">Class<SortIcon col="class" /></span>
               </th>
               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">Mentor</th>
-              <th onClick={() => handleSort('xp')} className="text-left px-4 py-3 text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-900">
-                <span className="flex items-center gap-1">XP<SortIcon col="xp" /></span>
+              <th onClick={() => handleSort('sessions')} className="text-left px-4 py-3 text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-900">
+                <span className="flex items-center gap-1">Sessions<SortIcon col="sessions" /></span>
               </th>
-              <th onClick={() => handleSort('level_number')} className="text-left px-4 py-3 text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-900">
-                <span className="flex items-center gap-1">Level<SortIcon col="level_number" /></span>
+              <th onClick={() => handleSort('avgScore')} className="text-left px-4 py-3 text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-900">
+                <span className="flex items-center gap-1">Avg Score<SortIcon col="avgScore" /></span>
               </th>
               <th onClick={() => handleSort('attendance')} className="text-left px-4 py-3 text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-900">
                 <span className="flex items-center gap-1">Attendance<SortIcon col="attendance" /></span>
@@ -260,18 +254,17 @@ export default function AdminStudents() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filtered.map(student => {
-              const mentor = realMentors.find(m => m.id === student.mentorId)
               return (
                 <tr key={student.id}
                   onClick={() => confirmId !== student.id && setSelected(student)}
                   className="hover:bg-gray-50 transition-colors cursor-pointer">
                   <td className="px-4 py-3"><p className="font-medium text-gray-900">{student.name}</p><p className="text-xs text-gray-400">{(student.subjects || []).join(', ')} · Age {student.age}</p></td>
                   <td className="px-4 py-3 text-gray-700">{student.class}</td>
-                  <td className="px-4 py-3 text-gray-700">{mentor ? mentor.name : <span className="text-gray-400">Not assigned</span>}</td>
-                  <td className="px-4 py-3 text-gray-700">{student.xp || 0}</td>
-                  <td className="px-4 py-3 text-gray-700">{student.level_number || 1}</td>
+                  <td className="px-4 py-3 text-gray-700">{student.assignedMentor || <span className="text-gray-400">Not assigned</span>}</td>
+                  <td className="px-4 py-3 text-gray-700">{student.sessions || 0}</td>
+                  <td className="px-4 py-3 text-gray-700">{student.avgScore || 0}</td>
                   <td className="px-4 py-3 text-gray-700">{student.attendance || 0}%</td>
-                  <td className="px-4 py-3 w-36"><ProgressBar value={student.progress || 0} /></td>
+                  <td className="px-4 py-3 w-36"><ProgressBar value={student.overallProgress || 0} /></td>
                   <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                     {confirmId === student.id ? (
                       <div className="flex items-center gap-2">
@@ -290,7 +283,7 @@ export default function AdminStudents() {
         </table>
       </div>
 
-      {selected && <StudentDetailModal student={selected} mentor={realMentors.find(m => m.id === selected.mentorId)} onClose={() => setSelected(null)} />}
+      {selected && <StudentDetailModal student={selected} mentor={realMentors.find(m => m.name === selected.assignedMentor)} onClose={() => setSelected(null)} />}
     </div>
   )
 }

@@ -69,10 +69,37 @@ const LoginAuth = ({ onLogin }) => {
       completedTopics: [1,2,3,4,5,6,7,10,11,19,20,21,33,34,35,37,38,45,46,47]
     },
     {
-      id: 'mentor_1', name: 'Dr. Anjali Verma', role: 'mentor', iconType: 'mentor',
-      subjects: ['Math', 'Science'], education: 'M.Sc Mathematics', skillLevel: 'advanced',
-      experience: 5, teachingExperience: true, ratings: { Math: 5, Science: 4 },
-      assignedStudents: ['student_2', 'student_3'], sessionsCompleted: 45, avgImprovement: 25, onboarded: true
+      id: 'mentor_1',
+      name: 'Dr. Anjali Verma',
+      role: 'mentor',
+      iconType: 'mentor',
+      borderColor: 'border-l-amber-500',
+      bgColor: 'bg-amber-50',
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600',
+      subjects: ['Math', 'Science'],
+      education: 'M.Sc Mathematics',
+      skillLevel: 'advanced',
+      experience: 5,
+      teachingExperience: true,
+      ratings: { Math: 5, Science: 4 },
+      assignedStudents: ['student_2', 'student_3'],
+      sessionsCompleted: 45,
+      avgImprovement: 25,
+      onboarded: true
+    },
+    {
+      id: 'admin',
+      name: 'Demo Admin',
+      role: 'admin',
+      iconType: 'admin',
+      borderColor: 'border-l-purple-500',
+      bgColor: 'bg-purple-50',
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+      organization: 'LearnSync NGO',
+      email: 'admin@demo.com',
+      onboarded: true
     }
   ];
 
@@ -91,14 +118,71 @@ const LoginAuth = ({ onLogin }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl flex gap-6">
+        {/* Mock Users Section */}
+        <div className="flex-1 max-w-md">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Try Demo Accounts</h2>
+            <p className="text-sm text-gray-600">Click any card to login instantly</p>
+          </div>
+          
+          <div className="space-y-3">
+            {mockUsers.map((user, index) => {
+              const IconMap = {
+                foundation: GraduationCap,
+                growth: Rocket,
+                mastery: Target,
+                mentor: Users,
+                admin: Shield
+              };
+              const UserIcon = IconMap[user.iconType] || GraduationCap;
 
-      {/* ── Left panel – branding (desktop) ── */}
-      <div className="hidden lg:flex flex-col justify-between w-[420px] bg-slate-900 p-10 flex-shrink-0">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
-            <GraduationCap className="w-5 h-5 text-white" />
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleMockLogin(user)}
+                  disabled={loading}
+                  className={`w-full p-4 rounded-xl bg-white border-2 border-gray-100 border-l-4 ${user.borderColor} hover:shadow-md hover:border-gray-200 transition-all duration-200 text-left ${
+                    loading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 ${user.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                      <UserIcon className={`w-5 h-5 ${user.iconColor}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-gray-900 text-sm sm:text-base">{user.name}</div>
+                      {user.role === 'student' ? (
+                        <>
+                          <div className="text-xs text-gray-500">
+                            {user.age} years • Class {user.class}
+                          </div>
+                          <div className="text-xs text-gray-400 capitalize mt-0.5">
+                            {user.level} Mode
+                          </div>
+                        </>
+                      ) : user.role === 'admin' ? (
+                        <>
+                          <div className="text-xs text-gray-500">NGO Administrator</div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {user.organization} • Full Access
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-xs text-gray-500">Mentor</div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {user.subjects.join(', ')}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-gray-400" />
+                  </div>
+                </button>
+              );
+            })}
           </div>
           <span className="text-2xl font-bold text-white tracking-tight">LearnSync</span>
         </div>
