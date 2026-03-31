@@ -76,8 +76,9 @@ const AppRoutes = () => {
   }, []);
 
   const handleLogin = (user, role, mockUsers = null) => {
-    // Check if it's a demo user (has no email or authId)
-    if (!user.email && !user.authId) {
+    // If mockUsers are provided, this is a demo login
+    const isDemoUser = mockUsers || ['student_1', 'student_2', 'student_3', 'mentor_1', 'admin'].includes(user.id);
+    if (isDemoUser) {
       // Store demo user in sessionStorage
       sessionStorage.setItem('demoUser', JSON.stringify(user));
       

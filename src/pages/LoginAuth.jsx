@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Mail, Lock, UserPlus, LogIn, GraduationCap, Rocket, Target, Users, ArrowRight } from 'lucide-react';
+import { BookOpen, Mail, Lock, UserPlus, LogIn, GraduationCap, Rocket, Target, Users, ArrowRight, Shield } from 'lucide-react';
 import { signIn, signUp, signInWithGoogle } from '../services/auth';
 import Button from '../components/Button';
 
@@ -184,6 +184,19 @@ const LoginAuth = ({ onLogin }) => {
       sessionsCompleted: 45,
       avgImprovement: 25,
       onboarded: true
+    },
+    {
+      id: 'admin',
+      name: 'Demo Admin',
+      role: 'admin',
+      iconType: 'admin',
+      borderColor: 'border-l-purple-500',
+      bgColor: 'bg-purple-50',
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+      organization: 'LearnSync NGO',
+      email: 'admin@demo.com',
+      onboarded: true
     }
   ];
 
@@ -218,7 +231,8 @@ const LoginAuth = ({ onLogin }) => {
                 foundation: GraduationCap,
                 growth: Rocket,
                 mastery: Target,
-                mentor: Users
+                mentor: Users,
+                admin: Shield
               };
               const UserIcon = IconMap[user.iconType] || GraduationCap;
 
@@ -244,6 +258,13 @@ const LoginAuth = ({ onLogin }) => {
                           </div>
                           <div className="text-xs text-gray-400 capitalize mt-0.5">
                             {user.level} Mode
+                          </div>
+                        </>
+                      ) : user.role === 'admin' ? (
+                        <>
+                          <div className="text-xs text-gray-500">NGO Administrator</div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {user.organization} • Full Access
                           </div>
                         </>
                       ) : (

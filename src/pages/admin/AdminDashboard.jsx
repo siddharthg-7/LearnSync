@@ -4,6 +4,12 @@ import Card from '../../components/Card';
 import { Users, BookOpen, TrendingUp, AlertTriangle, X, ChevronRight, Sparkles, Lightbulb, ArrowRight, Brain } from 'lucide-react';
 import { mockStudents, mockMentors } from '../../utils/mockData';
 
+// Declining subjects data for AI suggestions & alerts
+const DECLINING_SUBJECTS = [
+  { subject: 'English', trend: '-8%', avgScore: 52, studentsAffected: 6, reason: 'Weak comprehension and writing skills across foundation & growth levels.' },
+  { subject: 'Science', trend: '-5%', avgScore: 58, studentsAffected: 4, reason: 'Students struggling with practical concepts; need more visual/interactive content.' },
+];
+
 // ── SVG Chart Components ───────────────────────────────────────────────────
 const BarChart = ({ data, color = '#3b82f6', height = 120 }) => {
   const max = Math.max(...data.map(d => d.value), 1);
@@ -105,32 +111,35 @@ const AdminDashboard = () => {
   const { appData } = useApp();
   const [modal, setModal] = useState(null); // 'highRisk' | 'lowMentors' | 'declining'
 
-  // Filter out demo users (those with IDs like 'student_1', 'mentor_1', etc.)
-  const realStudents = appData.students.filter(s => !s.id.match(/^student_\d+$/))
-  const realMentors = appData.mentors.filter(m => !m.id.match(/^mentor_\d+$/))
+  // Use admin-specific mockStudents / mockMentors (richer dataset for admin views)
+  const adminStudents = mockStudents;
+  const adminMentors = mockMentors;
 
-  // Calculate stats from real data
-  const totalStudents = realStudents.length;
-  const activeMentors = realMentors.filter(m => m.onboarded).length;
+  // Calculate stats
+  const totalStudents = adminStudents.length;
+  const activeMentors = adminMentors.filter(m => m.status === 'active').length;
   const totalSessions = appData.sessions.length;
-  
+
   // Calculate average progress
-  const avgProgress = totalStudents > 0 
-    ? Math.round(realStudents.reduce((sum, s) => sum + (s.progress || 0), 0) / totalStudents)
+  const avgProgress = totalStudents > 0
+    ? Math.round(adminStudents.reduce((sum, s) => sum + (s.overallProgress || 0), 0) / totalStudents)
     : 0;
   const avgAttendance = totalStudents > 0
-    ? Math.round(realStudents.reduce((sum, s) => sum + (s.attendance || 0), 0) / totalStudents)
+    ? Math.round(adminStudents.reduce((sum, s) => sum + (s.attendance || 0), 0) / totalStudents)
     : 0;
 
-  // High-risk students (progress < 50 or attendance < 70)
-  const highRiskStudents = realStudents.filter(s => 
-    (s.progress || 0) < 50 || (s.attendance || 0) < 70
-  ).length;
+  // High-risk students (progress < 50 or attendance < 70) — keep as ARRAY
+  const highRiskStudents = adminStudents.filter(s =>
+    (s.overallProgress || 0) < 50 || (s.attendance || 0) < 70
+  );
 
-  // Low-performing mentors (avgImprovement < 15)
-  const lowPerformingMentors = realMentors.filter(m => 
-    (m.avgImprovement || 0) < 15
-  ).length;
+  // Low-performing mentors (effectivenessScore < 50) — keep as ARRAY
+  const lowPerformingMentors = adminMentors.filter(m =>
+    (m.effectivenessScore || 0) < 50
+  );
+
+  // Declining subjects
+  const decliningSubjects = DECLINING_SUBJECTS;
 
   // ── Chart data ──────────────────────────────────────────────────────────
   const weeklyProgressData = [
@@ -227,13 +236,13 @@ const AdminDashboard = () => {
         {alertCard(
           'bg-red-50', 'border-red-200',
           <AlertTriangle className="w-5 h-5 text-red-600" />,
-          'High-Risk Students', highRiskStudents.length,
+          'High-Risk Students', highRiskStudents.length ?? 0,
           () => setModal('highRisk')
         )}
         {alertCard(
           'bg-orange-50', 'border-orange-200',
           <AlertTriangle className="w-5 h-5 text-orange-600" />,
-          'Low-performing Mentors', lowPerformingMentors.length,
+          'Low-performing Mentors', lowPerformingMentors.length ?? 0,
           () => setModal('lowMentors')
         )}
         {alertCard(
@@ -429,23 +438,23 @@ const AdminDashboard = () => {
                     <p className="font-semibold text-gray-900">{s.name}</p>
                     <span className="text-xs text-gray-500">Class {s.class} • Age {s.age}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mb-2">Mentor: {s.assignedMentor} • {s.subjects.join(', ')}</p>
+                  <p className="text-xs text-gray-500 mb-2">Mentor: {s.assignedMentor} • {(s.subjects || []).join(', ')}</p>
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="bg-white rounded-lg p-2">
                       <p className="text-xs text-gray-500">Progress</p>
-                      <p className={`text-sm font-semibold ${s.overallProgress < 50 ? 'text-red-600' : 'text-gray-900'}`}>{s.overallProgress}%</p>
+                      <p className={`text-sm font-semibold ${(s.overallProgress || 0) < 50 ? 'text-red-600' : 'text-gray-900'}`}>{s.overallProgress || 0}%</p>
                     </div>
                     <div className="bg-white rounded-lg p-2">
                       <p className="text-xs text-gray-500">Attendance</p>
-                      <p className={`text-sm font-semibold ${s.attendance < 70 ? 'text-red-600' : 'text-gray-900'}`}>{s.attendance}%</p>
+                      <p className={`text-sm font-semibold ${(s.attendance || 0) < 70 ? 'text-red-600' : 'text-gray-900'}`}>{s.attendance || 0}%</p>
                     </div>
                     <div className="bg-white rounded-lg p-2">
                       <p className="text-xs text-gray-500">Avg Score</p>
                       <p className="text-sm font-semibold text-gray-900">{s.avgScore}</p>
                     </div>
                   </div>
-                  {s.weakTopics.length > 0 && (
-                    <p className="text-xs text-red-600 mt-2">Weak areas: {s.weakTopics.join(', ')}</p>
+                  {(s.weakTopics || []).length > 0 && (
+                    <p className="text-xs text-red-600 mt-2">Weak areas: {(s.weakTopics || []).join(', ')}</p>
                   )}
                 </div>
               </div>
@@ -467,7 +476,7 @@ const AdminDashboard = () => {
                     <p className="font-semibold text-gray-900">{m.name}</p>
                     <span className="px-2 py-0.5 rounded-full text-xs bg-orange-200 text-orange-800 font-medium">Low Performing</span>
                   </div>
-                  <p className="text-xs text-gray-500 mb-3">Subjects: {m.subjects.join(', ')} • {m.studentsAssigned} students</p>
+                  <p className="text-xs text-gray-500 mb-3">Subjects: {(m.subjects || []).join(', ')} • {m.studentsAssigned} students</p>
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="bg-white rounded-lg p-2">
                       <p className="text-xs text-gray-500">Effectiveness</p>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Trash2, Search, ChevronUp, ChevronDown, X, Users, BookOpen, TrendingUp, Star, Calendar } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { mockStudents, mockMentors } from '../../utils/mockData'
 
 function ProgressBar({ value }) {
   const color = value >= 80 ? 'bg-green-500' : value >= 60 ? 'bg-blue-500' : 'bg-red-400'
@@ -29,7 +30,7 @@ function StatBox({ label, value, color = 'text-gray-900' }) {
 }
 
 function MentorDetailModal({ mentor, onClose, students }) {
-  const assignedStudents = students.filter(s => s.mentorId === mentor.id)
+  const assignedStudents = students.filter(s => s.assignedMentor === mentor.name)
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
@@ -55,7 +56,7 @@ function MentorDetailModal({ mentor, onClose, students }) {
 
           {/* Key Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatBox label="Students" value={(mentor.assignedStudents || []).length} />
+            <StatBox label="Students" value={mentor.studentsAssigned || 0} />
             <StatBox label="Sessions Done" value={mentor.sessionsCompleted || 0} color="text-blue-600" />
             <StatBox label="Teaching Capacity" value={mentor.teachingCapacity || 5} color="text-purple-600" />
             <StatBox label="Experience" value={`${mentor.experience || 0} yrs`} color="text-green-600" />
@@ -111,15 +112,15 @@ function MentorDetailModal({ mentor, onClose, students }) {
                     <div className="flex items-center gap-4 text-right">
                       <div>
                         <p className="text-xs text-gray-400">Progress</p>
-                        <p className={`text-sm font-semibold ${(student.progress || 0) >= 75 ? 'text-green-600' : (student.progress || 0) >= 50 ? 'text-blue-600' : 'text-red-500'}`}>{student.progress || 0}%</p>
+                        <p className={`text-sm font-semibold ${(student.overallProgress || 0) >= 75 ? 'text-green-600' : (student.overallProgress || 0) >= 50 ? 'text-blue-600' : 'text-red-500'}`}>{student.overallProgress || 0}%</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-400">Attendance</p>
                         <p className={`text-sm font-semibold ${(student.attendance || 0) >= 75 ? 'text-green-600' : 'text-red-500'}`}>{student.attendance || 0}%</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">XP</p>
-                        <p className="text-sm font-semibold text-gray-700">{student.xp || 0}</p>
+                        <p className="text-xs text-gray-400">Avg Score</p>
+                        <p className="text-sm font-semibold text-gray-700">{student.avgScore || 0}</p>
                       </div>
                     </div>
                   </div>
@@ -152,14 +153,9 @@ export default function AdminMentors() {
   const [confirmId, setConfirmId] = useState(null)
   const [selected, setSelected] = useState(null)
   
-  // Filter out demo mentors (those with IDs like 'mentor_1', 'mentor_2', etc.)
-  const realMentors = appData.mentors.filter(m => {
-    return !m.id.match(/^mentor_\d+$/)
-  })
-  
-  const realStudents = appData.students.filter(s => {
-    return !s.id.match(/^student_\d+$/)
-  })
+  // Use admin-level mockStudents / mockMentors (richer dataset for admin views)
+  const realMentors = mockMentors
+  const realStudents = mockStudents
 
   const handleSort = (key) => {
     if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -189,8 +185,8 @@ export default function AdminMentors() {
       
       // Handle assignedStudents array length
       if (sortKey === 'assignedStudents') {
-        aVal = (a.assignedStudents || []).length
-        bVal = (b.assignedStudents || []).length
+        aVal = a.studentsAssigned || 0
+        bVal = b.studentsAssigned || 0
       } else {
         aVal = aVal || 0
         bVal = bVal || 0
@@ -204,7 +200,7 @@ export default function AdminMentors() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Mentors</h2>
-          <p className="text-sm text-gray-500">{realMentors.length} mentors registered (excluding demo accounts)</p>
+          <p className="text-sm text-gray-500">{realMentors.length} mentors registered</p>
         </div>
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -216,7 +212,7 @@ export default function AdminMentors() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">Total Mentors</p><p className="text-2xl font-semibold text-gray-900 mt-1">{realMentors.length}</p></div>
         <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">Total Sessions</p><p className="text-2xl font-semibold text-blue-600 mt-1">{realMentors.reduce((s, m) => s + (m.sessionsCompleted || 0), 0)}</p></div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">Students Assigned</p><p className="text-2xl font-semibold text-purple-600 mt-1">{realMentors.reduce((s, m) => s + (m.assignedStudents || []).length, 0)}</p></div>
+        <div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs text-gray-500">Students Assigned</p><p className="text-2xl font-semibold text-purple-600 mt-1">{realMentors.reduce((s, m) => s + (m.studentsAssigned || 0), 0)}</p></div>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-x-auto">
@@ -238,7 +234,7 @@ export default function AdminMentors() {
                 onClick={() => confirmId !== mentor.id && setSelected(mentor)}
                 className="hover:bg-gray-50 transition-colors cursor-pointer">
                 <td className="px-4 py-3"><p className="font-medium text-gray-900">{mentor.name}</p><p className="text-xs text-gray-400">{(mentor.subjects || []).join(', ')}</p></td>
-                <td className="px-4 py-3 text-gray-700">{(mentor.assignedStudents || []).length}</td>
+                <td className="px-4 py-3 text-gray-700">{mentor.studentsAssigned || 0}</td>
                 <td className="px-4 py-3 text-gray-700">{mentor.sessionsCompleted || 0}</td>
                 <td className="px-4 py-3 text-gray-700">{mentor.education || 'Not specified'}</td>
                 <td className="px-4 py-3 text-gray-700 capitalize">{mentor.skillLevel || 'Not specified'}</td>
