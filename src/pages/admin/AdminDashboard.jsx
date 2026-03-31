@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import Card from '../../components/Card';
 import { Users, BookOpen, TrendingUp, AlertTriangle, X, ChevronRight, Sparkles, Lightbulb, ArrowRight, Brain } from 'lucide-react';
-import { mockStudents, mockMentors } from '../../utils/mockData';
 
 // ── SVG Chart Components ───────────────────────────────────────────────────
 const BarChart = ({ data, color = '#3b82f6', height = 120 }) => {
@@ -112,7 +111,6 @@ const AdminDashboard = () => {
   // Calculate stats from real data
   const totalStudents = realStudents.length;
   const activeMentors = realMentors.filter(m => m.onboarded).length;
-  const totalSessions = appData.sessions.length;
   
   // Calculate average progress
   const avgProgress = totalStudents > 0 
@@ -131,6 +129,9 @@ const AdminDashboard = () => {
   const lowPerformingMentors = realMentors.filter(m => 
     (m.avgImprovement || 0) < 15
   ).length;
+
+  // Declining subjects (placeholder - would need more complex logic in production)
+  const decliningSubjects = [];
 
   // ── Chart data ──────────────────────────────────────────────────────────
   const weeklyProgressData = [
