@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import Card from '../../components/Card';
-import Button from '../../components/Button';
-import { CheckCircle, Circle, Sparkles, Clock, BookOpen, Calendar, ChevronRight, Plus, X, CalendarDays, Target, Zap } from 'lucide-react';
+import { CheckCircle, Sparkles, Clock, BookOpen, Calendar, ChevronRight, Plus, X, CalendarDays, Target, Zap } from 'lucide-react';
 import { callGemini } from '../../utils/gemini';
 
 const StudyPlan = () => {
@@ -205,25 +203,25 @@ Make tasks specific and actionable. Distribute subjects evenly across days. Each
   const todayDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Study Planner</h1>
-          <p className="text-gray-500 mt-1">{todayDate}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Study Planner</h1>
+          <p className="text-slate-500 text-sm mt-1">{todayDate}</p>
         </div>
-        <Button 
+        <button
           onClick={() => setShowPlanBuilder(!showPlanBuilder)}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200"
         >
           {showPlanBuilder ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          {showPlanBuilder ? 'Close' : 'Create New Plan'}
-        </Button>
+          {showPlanBuilder ? 'Close Builder' : 'AI Plan Builder'}
+        </button>
       </div>
 
       {/* Plan Builder Panel */}
       {showPlanBuilder && (
-        <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="bg-gradient-to-br from-blue-50 to-sky-50 border-2 border-blue-200 rounded-2xl p-5 md:p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
@@ -354,203 +352,175 @@ Make tasks specific and actionable. Distribute subjects evenly across days. Each
           </div>
 
           {/* Generate Button */}
-          <Button  
+          <button
             onClick={handleGeneratePlan}
             disabled={loading || planInputs.subjects.length === 0}
-            className="w-full py-4 text-lg flex items-center justify-center gap-3"
+            className="w-full py-3.5 bg-blue-600 text-white text-sm font-semibold rounded-xl
+              hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed
+              transition-colors flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-5 h-5" />
-            {loading ? 'AI is creating your schedule...' : 'Generate My Study Plan'}
-          </Button>
+            <Sparkles className="w-4 h-4" />
+            {loading ? 'AI is creating your schedule…' : 'Generate My Study Plan'}
+          </button>
           
           {planInputs.subjects.length === 0 && (
             <p className="text-center text-sm text-red-400 mt-2">Please select at least one subject</p>
           )}
-        </Card>
+        </div>
       )}
 
       {/* Today's Progress Bar */}
-      <Card className="border-2 border-gray-200">
-        <div className="flex items-center justify-between mb-3">
+      <div className="bg-white border border-slate-200 rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Today's Progress</h2>
-            <p className="text-gray-500 text-sm">{completedToday} of {totalToday} tasks completed</p>
+            <h2 className="text-base font-bold text-slate-900">Today's Progress</h2>
+            <p className="text-slate-500 text-sm">{completedToday} of {totalToday} tasks completed</p>
           </div>
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-4 border-gray-100 flex items-center justify-center relative">
+          <div className="relative w-16 h-16 flex-shrink-0">
             <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 64 64">
-              <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" strokeWidth="4" />
-              <circle cx="32" cy="32" r="28" fill="none" stroke="#3b82f6" strokeWidth="4"
+              <circle cx="32" cy="32" r="28" fill="none" stroke="#e2e8f0" strokeWidth="5" />
+              <circle cx="32" cy="32" r="28" fill="none" stroke="#3b82f6" strokeWidth="5"
                 strokeDasharray={`${2 * Math.PI * 28}`}
                 strokeDashoffset={`${2 * Math.PI * 28 * (1 - progressPercent / 100)}`}
-                strokeLinecap="round"
-                className="transition-all duration-500"
-              />
+                strokeLinecap="round" className="transition-all duration-700" />
             </svg>
-            <span className="text-sm font-bold text-gray-900">{progressPercent}%</span>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-sm font-bold text-slate-900">{progressPercent}%</span>
+            </div>
           </div>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-2.5">
+        <div className="w-full bg-slate-100 rounded-full h-2">
           {progressPercent > 0 && (
-            <div
-              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${progressPercent}%` }}
-            />
+            <div className="bg-blue-600 h-2 rounded-full transition-all duration-700" style={{ width: `${progressPercent}%` }} />
           )}
         </div>
         {progressPercent === 100 && (
-          <div className="mt-3 py-2 bg-green-50 border border-green-200 rounded-xl text-center">
-            <p className="font-semibold text-green-700 text-sm">All tasks completed for today!</p>
+          <div className="mt-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+            <p className="font-semibold text-emerald-700 text-sm flex items-center justify-center gap-2">
+              <CheckCircle className="w-4 h-4" /> All tasks completed — great work!
+            </p>
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Today's Schedule */}
-      <Card>
+      <div className="bg-white border border-slate-200 rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-orange-600" />
+            <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center">
+              <Calendar className="w-4 h-4 text-blue-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Today's Schedule</h2>
+            <h2 className="text-base font-bold text-slate-900">Today's Schedule</h2>
           </div>
-          <span className="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-600 font-medium">
+          <span className="px-2.5 py-1 bg-slate-100 rounded-full text-xs text-slate-600 font-medium">
             {todayDate.split(',')[0]}
           </span>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {todaySchedule.map((task) => (
-            <div
-              key={task.id}
-              onClick={() => toggleTaskComplete(task.id)}
-              className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all group ${
-                task.completed
-                  ? 'border-green-200 bg-green-50'
-                  : 'border-gray-100 hover:border-blue-200 hover:shadow-sm'
-              }`}
-            >
-              {/* Time badge */}
-              <div className={`w-20 text-center py-2 rounded-lg text-xs font-bold ${
-                task.completed ? 'bg-green-200 text-green-800' : 'bg-blue-100 text-blue-700'
-              }`}>
+            <div key={task.id} onClick={() => toggleTaskComplete(task.id)}
+              className={`flex items-center gap-3.5 p-3.5 rounded-xl border-2 cursor-pointer transition-all group
+                ${task.completed ? 'border-emerald-200 bg-emerald-50' : 'border-slate-100 hover:border-blue-200 hover:bg-slate-50'}`}>
+              {/* Time */}
+              <div className={`w-16 text-center py-1.5 rounded-lg text-xs font-bold flex-shrink-0
+                ${task.completed ? 'bg-emerald-200 text-emerald-800' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
                 {task.time}
               </div>
-              
               {/* Checkbox */}
-              {task.completed ? (
-                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-              ) : (
-                <Circle className="w-6 h-6 text-gray-300 group-hover:text-blue-400 flex-shrink-0" />
-              )}
-              
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all
+                ${task.completed ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300 group-hover:border-blue-400'}`}>
+                {task.completed && <CheckCircle className="w-3.5 h-3.5 text-white" />}
+              </div>
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    task.type === 'ai-generated' 
-                      ? 'bg-purple-100 text-purple-700' 
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold
+                    ${task.type === 'ai-generated' ? 'bg-sky-100 text-sky-700' : 'bg-blue-100 text-blue-700'}`}>
                     {task.subject}
                   </span>
                   {task.type === 'ai-generated' && (
-                    <span className="px-2 py-0.5 bg-purple-50 text-purple-500 rounded-full text-xs flex items-center gap-1">
+                    <span className="flex items-center gap-0.5 text-sky-500 text-xs font-medium">
                       <Sparkles className="w-3 h-3" /> AI
                     </span>
                   )}
-                  <span className="text-xs text-gray-400">{task.duration}</span>
+                  <span className="text-xs text-slate-400">{task.duration}</span>
                 </div>
-                <p className={`text-sm font-medium truncate ${
-                  task.completed ? 'text-green-800 line-through' : 'text-gray-800'
-                }`}>
+                <p className={`text-sm font-medium truncate ${task.completed ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
                   {task.task}
                 </p>
               </div>
-              
-              {/* Status */}
               {task.completed && (
-                <span className="px-3 py-1 bg-green-600 text-white text-xs rounded-full font-semibold flex-shrink-0">
-                  Done ✓
-                </span>
+                <span className="px-2.5 py-1 bg-emerald-600 text-white text-xs rounded-full font-semibold flex-shrink-0">Done</span>
               )}
             </div>
           ))}
-          
           {todaySchedule.length === 0 && (
-            <div className="text-center py-12 text-gray-400">
-              <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p className="font-medium">No tasks scheduled for today</p>
-              <p className="text-sm mt-1">Click "Create New Plan" to get started!</p>
+            <div className="text-center py-10 text-slate-400">
+              <Calendar className="w-10 h-10 mx-auto mb-3 opacity-40" />
+              <p className="font-medium text-sm">No tasks scheduled yet</p>
+              <p className="text-xs mt-1">Use the AI Plan Builder to create your schedule!</p>
             </div>
           )}
         </div>
-      </Card>
+      </div>
 
       {/* Upcoming Schedule */}
       {upcomingSchedule.length > 0 && (
-        <Card>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-              <CalendarDays className="w-5 h-5 text-purple-600" />
+            <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center">
+              <CalendarDays className="w-4 h-4 text-slate-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Upcoming Schedule</h2>
+            <h2 className="text-base font-bold text-slate-900">Upcoming Schedule</h2>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             {upcomingSchedule.map((day) => (
-              <div key={day.id} className="border-2 border-gray-100 rounded-xl overflow-hidden">
-                <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
-                  <span className="font-bold text-gray-800">{day.day}</span>
-                  <span className="text-sm text-gray-500">{day.tasks.length} tasks</span>
+              <div key={day.id} className="border-2 border-slate-100 rounded-xl overflow-hidden">
+                <div className="bg-slate-50 px-4 py-3 flex items-center justify-between border-b border-slate-100">
+                  <span className="font-bold text-slate-800 text-sm">{day.day}</span>
+                  <span className="text-xs text-slate-400 font-medium">{day.tasks.length} tasks</span>
                 </div>
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-slate-100">
                   {day.tasks.map((task) => (
                     <div key={task.id} className="px-4 py-3 flex items-center gap-3">
-                      <div className="w-16 text-center py-1 rounded-lg bg-purple-50 text-xs font-bold text-purple-700">
+                      <div className="w-14 text-center py-1 rounded-lg bg-blue-50 text-xs font-bold text-blue-700 flex-shrink-0">
                         {task.time}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
-                            {task.subject}
-                          </span>
-                          <span className="text-xs text-gray-400">{task.duration}</span>
+                          <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full text-xs font-semibold">{task.subject}</span>
+                          <span className="text-xs text-slate-400">{task.duration}</span>
                         </div>
-                        <p className="text-sm text-gray-700 truncate">{task.task}</p>
+                        <p className="text-sm text-slate-700 truncate">{task.task}</p>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
-        <Card className="text-center p-3 sm:p-5">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
-            <Target className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-          </div>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900">{completedToday}</p>
-          <p className="text-xs sm:text-sm text-gray-500">Done Today</p>
-        </Card>
-        <Card className="text-center p-3 sm:p-5">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
-            <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-          </div>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900">{student?.streak || 0}</p>
-          <p className="text-xs sm:text-sm text-gray-500">Day Streak</p>
-        </Card>
-        <Card className="text-center p-3 sm:p-5">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
-            <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-          </div>
-          <p className="text-xl sm:text-2xl font-bold text-gray-900">{upcomingSchedule.reduce((acc, day) => acc + day.tasks.length, 0)}</p>
-          <p className="text-xs sm:text-sm text-gray-500">Upcoming</p>
-        </Card>
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: 'Done Today', value: completedToday, icon: Target, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Day Streak', value: student?.streak || 0, icon: Zap, color: 'text-rose-600', bg: 'bg-rose-50' },
+          { label: 'Upcoming', value: upcomingSchedule.reduce((acc, day) => acc + day.tasks.length, 0), icon: BookOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+        ].map(s => {
+          const SIcon = s.icon;
+          return (
+            <div key={s.label} className={`${s.bg} border border-slate-200 rounded-2xl p-4 text-center`}>
+              <SIcon className={`w-5 h-5 ${s.color} mx-auto mb-2`} />
+              <p className="text-2xl font-bold text-slate-900">{s.value}</p>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">{s.label}</p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

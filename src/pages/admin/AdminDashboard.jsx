@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import Card from '../../components/Card';
 import { Users, BookOpen, TrendingUp, AlertTriangle, X, ChevronRight, Sparkles, Lightbulb, ArrowRight, Brain } from 'lucide-react';
-import { mockStudents, mockMentors } from '../../utils/mockData';
 
 // Declining subjects data for AI suggestions & alerts
 const DECLINING_SUBJECTS = [
@@ -140,6 +139,9 @@ const AdminDashboard = () => {
 
   // Declining subjects
   const decliningSubjects = DECLINING_SUBJECTS;
+
+  // Declining subjects (placeholder - would need more complex logic in production)
+  const decliningSubjects = [];
 
   // ── Chart data ──────────────────────────────────────────────────────────
   const weeklyProgressData = [

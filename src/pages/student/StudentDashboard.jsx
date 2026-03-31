@@ -1,317 +1,258 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
-import Card from '../../components/Card';
-import ProgressBar from '../../components/ProgressBar';
-import Button from '../../components/Button';
-import { BookOpen, TrendingUp, Zap, Star, Flame, Trophy, Award, Target } from 'lucide-react';
+import {
+  BookOpen, TrendingUp, Zap, Star, Flame, Trophy, Award, Target,
+  ChevronRight, Clock, CheckCircle, BarChart2, Calendar, Sparkles,
+  ArrowUpRight, Circle
+} from 'lucide-react';
 
-// Foundation Mode (5-10 years) - Big, colorful, fun, super gamified
+// ─── Reusable Stat Card ───────────────────────────────────────
+const StatCard = ({ label, value, sub, icon: Icon, color }) => {
+  const colorMap = {
+    blue:   { bg: 'bg-blue-50',   text: 'text-blue-600',   icon: 'bg-blue-100',    ring: 'ring-blue-200' },
+    emerald:{ bg: 'bg-emerald-50',text: 'text-emerald-600',icon: 'bg-emerald-100', ring: 'ring-emerald-200' },
+    amber:  { bg: 'bg-amber-50',  text: 'text-amber-600',  icon: 'bg-amber-100',   ring: 'ring-amber-200' },
+    rose:   { bg: 'bg-rose-50',   text: 'text-rose-600',   icon: 'bg-rose-100',    ring: 'ring-rose-200' },
+  };
+  const c = colorMap[color] || colorMap.blue;
+  return (
+    <div className={`${c.bg} rounded-2xl p-4 md:p-5 flex flex-col gap-3 ring-1 ${c.ring} stat-card cursor-default`}>
+      <div className={`w-10 h-10 ${c.icon} rounded-xl flex items-center justify-center`}>
+        <Icon className={`w-5 h-5 ${c.text}`} />
+      </div>
+      <div>
+        <p className="text-2xl md:text-3xl font-bold text-slate-900">{value}</p>
+        <p className="text-sm font-semibold text-slate-500 mt-0.5">{label}</p>
+        {sub && <p className={`text-xs font-medium ${c.text} mt-1`}>{sub}</p>}
+      </div>
+    </div>
+  );
+};
+
+// ─── Progress Ring ────────────────────────────────────────────
+const ProgressRing = ({ value, size = 80, stroke = 7, color = '#3b82f6' }) => {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (value / 100) * circ;
+  return (
+    <svg width={size} height={size} className="-rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+        className="transition-all duration-700" />
+    </svg>
+  );
+};
+
+// ─── FOUNDATION DASHBOARD (age ≤ 10) ─────────────────────────
 const FoundationDashboard = ({ student, studyPlan, courses }) => {
+  const navigate = useNavigate();
   const nextLevelXP = 1000;
-  const progressPercent = (student.xp / nextLevelXP) * 100;
+  const progressPercent = Math.min((student.xp / nextLevelXP) * 100, 100);
+
+  const subjects = [
+    { name: 'Mathematics', bg: 'from-sky-500 to-blue-600', img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&q=80' },
+    { name: 'English',     bg: 'from-amber-500 to-orange-600', img: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=80' },
+    { name: 'Science',     bg: 'from-emerald-500 to-teal-600', img: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&q=80' },
+  ];
+
+  const badges = [
+    { icon: Star,     name: 'First Star',    color: 'text-amber-500',   bg: 'bg-amber-50',   unlocked: true  },
+    { icon: Flame,    name: 'Streak Pro',    color: 'text-orange-500',  bg: 'bg-orange-50',  unlocked: student.streak >= 5 },
+    { icon: BookOpen, name: 'Bookworm',      color: 'text-blue-500',    bg: 'bg-blue-50',    unlocked: true  },
+    { icon: Target,   name: 'Sharpshooter', color: 'text-red-500',     bg: 'bg-red-50',     unlocked: false },
+    { icon: Zap,      name: 'Speed Star',   color: 'text-sky-500',     bg: 'bg-sky-50',     unlocked: false },
+    { icon: Award,    name: 'Champion',     color: 'text-emerald-500', bg: 'bg-emerald-50', unlocked: false },
+  ];
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      {/* Big Welcome with Rocket */}
-      <div className="text-center bg-gradient-to-r from-purple-100 via-pink-100 to-yellow-100 rounded-3xl p-6 md:p-8">
-        <div className="text-6xl md:text-8xl mb-3">🚀</div>
-        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-2">
-          Hi {student.name}!
-        </h1>
-        <div className="inline-flex items-center gap-2 bg-yellow-400 px-4 md:px-6 py-2 md:py-3 rounded-full">
-          <Trophy className="w-5 h-5 md:w-6 md:h-6 text-yellow-900" />
-          <span className="text-lg md:text-2xl font-bold text-yellow-900">Level {student.level_number}</span>
+    <div className="space-y-5">
+      {/* Hero */}
+      <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+        <div className="flex items-center">
+          <div className="flex-1 p-5 md:p-8">
+            <p className="text-slate-500 text-sm font-medium">Hello there,</p>
+            <h1 className="text-2xl md:text-4xl font-bold text-slate-900 mt-0.5">{student.name}!</h1>
+            <p className="text-slate-400 text-sm mt-1 mb-4">Ready to learn something amazing today?</p>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-sm font-semibold border border-amber-200">
+              <Trophy className="w-3.5 h-3.5" /> Level {student.level_number}
+            </span>
+          </div>
+          <img src="https://images.unsplash.com/photo-1503676382389-4809596d5290?w=300&q=80"
+            alt="Learning" className="w-28 h-28 md:w-44 md:h-44 object-cover flex-shrink-0 opacity-80" />
         </div>
       </div>
 
-      {/* Level Progress Bar - Big and Colorful */}
-      <div className="bg-white rounded-2xl p-4 md:p-6 shadow-lg border-4 border-purple-200">
+      {/* XP Progress */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 md:p-5">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-base md:text-lg font-bold text-gray-700">Next Level</span>
-          <span className="text-base md:text-lg font-bold text-purple-600">{student.xp} / {nextLevelXP} ⭐</span>
+          <span className="font-semibold text-slate-800 flex items-center gap-2"><Star className="w-4 h-4 text-amber-500" /> Level Progress</span>
+          <span className="text-sm font-bold text-slate-700">{student.xp} / {nextLevelXP} XP</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-6 md:h-8 relative overflow-hidden">
-          <div 
-            className="bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 h-full rounded-full transition-all duration-500 flex items-center justify-end pr-2"
-            style={{ width: `${progressPercent}%` }}
-          >
-            <span className="text-white font-bold text-xs md:text-sm">🎯</span>
-          </div>
+        <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+          <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-700"
+            style={{ width: `${progressPercent}%` }} />
         </div>
-      </div>
-
-      {/* Big Stats with Animations */}
-      <div className="grid grid-cols-2 gap-4 md:gap-6">
-        <div className="bg-gradient-to-br from-yellow-400 to-orange-400 rounded-3xl p-6 md:p-8 text-center shadow-xl transform hover:scale-105 transition-transform">
-          <div className="text-5xl md:text-6xl mb-2">⭐</div>
-          <p className="text-3xl md:text-4xl font-bold text-white mb-1">{student.xp}</p>
-          <p className="text-base md:text-lg text-yellow-100 font-semibold">Stars</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-400 to-red-400 rounded-3xl p-6 md:p-8 text-center shadow-xl transform hover:scale-105 transition-transform">
-          <div className="text-5xl md:text-6xl mb-2">🔥</div>
-          <p className="text-3xl md:text-4xl font-bold text-white mb-1">{student.streak}</p>
-          <p className="text-base md:text-lg text-orange-100 font-semibold">Day Streak</p>
+        <div className="flex justify-between mt-1.5 text-xs text-slate-400 font-medium">
+          <span>Lv {student.level_number}</span><span>Lv {student.level_number + 1}</span>
         </div>
       </div>
 
-      {/* Today's Missions - Colorful Cards */}
-      {studyPlan && studyPlan.tasks && studyPlan.tasks.length > 0 && (
-        <div className="bg-white rounded-3xl p-4 md:p-6 shadow-lg border-4 border-blue-200">
-          <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <div className="text-4xl md:text-5xl">🎯</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Today's Missions</h2>
-          </div>
-          <div className="space-y-3 md:space-y-4">
-            {studyPlan.tasks.slice(0, 3).map((task, index) => (
-              <div key={task.id} className={`flex items-center gap-3 md:gap-4 p-4 md:p-5 rounded-2xl border-4 ${
-                index === 0 ? 'bg-blue-100 border-blue-400' :
-                index === 1 ? 'bg-green-100 border-green-400' :
-                'bg-purple-100 border-purple-400'
-              } transform hover:scale-102 transition-transform`}>
-                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-2xl md:text-3xl ${
-                  index === 0 ? 'bg-blue-400' :
-                  index === 1 ? 'bg-green-400' :
-                  'bg-purple-400'
-                }`}>
-                  {task.completed ? '✅' : '⭐'}
-                </div>
-                <div className="flex-1">
-                  <p className="text-base md:text-xl font-bold text-gray-900">{task.task}</p>
-                  <p className="text-sm md:text-lg font-semibold text-yellow-600">+{task.xp} Stars</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button className="mt-4 md:mt-6 w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-lg md:text-xl font-bold py-4 md:py-5 rounded-2xl hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg">
-            Start Learning! 🚀
-          </button>
-        </div>
-      )}
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3">
+        <StatCard label="Stars Earned" value={student.xp} icon={Star} color="amber" sub="Keep going!" />
+        <StatCard label="Day Streak" value={`${student.streak}d`} icon={Flame} color="rose" sub="On fire!" />
+      </div>
 
-      {/* My Courses - Big Colorful Cards */}
-      {courses && courses.length > 0 && (
-        <div>
-          <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <div className="text-4xl md:text-5xl">📚</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">My Learning</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:gap-6">
-            {courses.slice(0, 3).map((course, index) => (
-              <div key={course.id} className={`rounded-3xl p-5 md:p-6 shadow-xl border-4 transform hover:scale-102 transition-transform ${
-                index === 0 ? 'bg-gradient-to-br from-pink-100 to-purple-100 border-pink-300' :
-                index === 1 ? 'bg-gradient-to-br from-blue-100 to-cyan-100 border-blue-300' :
-                'bg-gradient-to-br from-green-100 to-yellow-100 border-green-300'
-              }`}>
-                <div className="flex items-center gap-3 md:gap-4 mb-4">
-                  <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl md:text-4xl ${
-                    index === 0 ? 'bg-pink-300' :
-                    index === 1 ? 'bg-blue-300' :
-                    'bg-green-300'
-                  }`}>
-                    {index === 0 ? '🎨' : index === 1 ? '🔢' : '🌍'}
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-gray-900">{course.name}</h3>
-                </div>
-                <div className="mb-4">
-                  <div className="w-full bg-white rounded-full h-5 md:h-6 border-2 border-gray-300">
-                    <div className={`h-full rounded-full ${
-                      index === 0 ? 'bg-gradient-to-r from-pink-400 to-purple-400' :
-                      index === 1 ? 'bg-gradient-to-r from-blue-400 to-cyan-400' :
-                      'bg-gradient-to-r from-green-400 to-yellow-400'
-                    }`} style={{ width: '60%' }}></div>
-                  </div>
-                </div>
-                <button className={`w-full text-base md:text-lg font-bold py-3 md:py-4 rounded-xl transition-all transform hover:scale-105 ${
-                  index === 0 ? 'bg-pink-400 hover:bg-pink-500 text-white' :
-                  index === 1 ? 'bg-blue-400 hover:bg-blue-500 text-white' :
-                  'bg-green-400 hover:bg-green-500 text-white'
-                }`}>
-                  Continue Learning 🎯
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Achievements Section */}
-      <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-3xl p-4 md:p-6 border-4 border-yellow-300">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="text-4xl md:text-5xl">🏆</div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">My Badges</h2>
-        </div>
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
-          {[
-            { emoji: '🌟', name: 'First Star', unlocked: true },
-            { emoji: '🔥', name: '7 Day Streak', unlocked: student.streak >= 7 },
-            { emoji: '📚', name: 'Bookworm', unlocked: true },
-            { emoji: '🎯', name: 'Perfect Score', unlocked: false },
-            { emoji: '⚡', name: 'Speed Learner', unlocked: false },
-            { emoji: '🚀', name: 'Rocket', unlocked: false },
-          ].map((badge, index) => (
-            <div key={index} className={`text-center p-3 md:p-4 rounded-2xl ${
-              badge.unlocked ? 'bg-white border-4 border-yellow-400' : 'bg-gray-200 border-4 border-gray-300 opacity-50'
-            }`}>
-              <div className="text-3xl md:text-4xl mb-1">{badge.emoji}</div>
-              <p className="text-xs md:text-sm font-bold text-gray-700">{badge.name}</p>
+      {/* Subject Cards */}
+      <div>
+        <h2 className="text-lg font-bold text-slate-900 mb-3">My Subjects</h2>
+        <div className="grid grid-cols-3 gap-3">
+          {subjects.map((s, i) => (
+            <div key={i} onClick={() => navigate('/courses')}
+              className="relative aspect-square rounded-2xl overflow-hidden cursor-pointer hover:scale-105 transition-transform group shadow-sm">
+              <img src={s.img} alt={s.name} className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+              <p className="absolute bottom-2 inset-x-0 text-center text-white text-xs font-bold px-1">{s.name}</p>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Today's Missions */}
+      {studyPlan?.tasks?.length > 0 && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 md:p-5">
+          <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+            <Target className="w-4 h-4 text-blue-500" /> Today's Missions
+          </h2>
+          <div className="space-y-2">
+            {studyPlan.tasks.slice(0, 3).map((task, i) => {
+              const cols = ['bg-blue-50 border-blue-200 text-blue-700','bg-emerald-50 border-emerald-200 text-emerald-700','bg-amber-50 border-amber-200 text-amber-700'];
+              return (
+                <div key={task.id} className={`flex items-center gap-3 p-3 rounded-xl border ${cols[i % 3]}`}>
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  <p className="text-sm font-medium flex-1 truncate">{task.task}</p>
+                  <span className="text-xs font-bold">+{task.xp} XP</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Badges */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 md:p-5">
+        <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-amber-500" /> My Badges
+        </h2>
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+          {badges.map((b, i) => {
+            const B = b.icon;
+            return (
+              <div key={i} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-center
+                ${b.unlocked ? `${b.bg} border-slate-200` : 'bg-slate-50 border-slate-100 opacity-40'}`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${b.unlocked ? b.bg : 'bg-slate-100'}`}>
+                  <B className={`w-4 h-4 ${b.unlocked ? b.color : 'text-slate-400'}`} />
+                </div>
+                <p className="text-xs font-semibold text-slate-700 leading-tight">{b.name}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
   );
 };
 
-// Growth Mode (11-14 years) - Gamified with XP and badges
+// ─── GROWTH DASHBOARD (age 11–14) ─────────────────────────────
 const GrowthDashboard = ({ student, studyPlan, courses }) => {
+  const navigate = useNavigate();
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Welcome with Level */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
-            Welcome back, {student.name}!
-          </h1>
-          <p className="text-sm sm:text-lg text-blue-600 mt-1">Growth Mode - Level {student.level_number}</p>
+          <p className="text-sm text-slate-500 font-medium">Welcome back,</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">{student.name}!</h1>
+          <p className="text-sm text-blue-600 font-medium mt-1">Growth Mode · Level {student.level_number}</p>
         </div>
-        <div className="sm:text-right">
-          <p className="text-xs sm:text-sm text-gray-500">Next Level</p>
-          <div className="w-full sm:w-48 bg-gray-200 rounded-full h-2.5 sm:h-3 mt-1">
-            <div className="bg-blue-600 h-full rounded-full" style={{ width: '70%' }}></div>
-          </div>
-          <p className="text-xs text-gray-500 mt-1">{student.xp} / 1000 XP</p>
-        </div>
+        <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-md shadow-blue-200">
+          <Zap className="w-4 h-4" /> {student.xp} XP Total
+        </span>
       </div>
 
-      {/* XP Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="text-center p-3 sm:p-4">
-          <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mx-auto mb-1 sm:mb-2" />
-          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.xp}</p>
-          <p className="text-xs sm:text-sm text-gray-500">Total XP</p>
-        </Card>
-
-        <Card className="text-center p-3 sm:p-4">
-          <Flame className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600 mx-auto mb-1 sm:mb-2" />
-          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.streak}</p>
-          <p className="text-xs sm:text-sm text-gray-500">Day Streak</p>
-        </Card>
-
-        <Card className="text-center p-3 sm:p-4">
-          <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 mx-auto mb-1 sm:mb-2" />
-          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.progress}%</p>
-          <p className="text-xs sm:text-sm text-gray-500">Progress</p>
-        </Card>
-
-        <Card className="text-center p-3 sm:p-4">
-          <Award className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mx-auto mb-1 sm:mb-2" />
-          <p className="text-xl sm:text-3xl font-bold text-gray-900">{student.level_number}</p>
-          <p className="text-xs sm:text-sm text-gray-500">Level</p>
-        </Card>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Total XP"   value={student.xp}           icon={Zap}       color="blue"    sub="Points earned" />
+        <StatCard label="Day Streak" value={`${student.streak}d`} icon={Flame}     color="rose"    sub="Keep going!" />
+        <StatCard label="Progress"   value={`${student.progress}%`} icon={TrendingUp} color="emerald" sub="Overall" />
+        <StatCard label="Level"      value={student.level_number} icon={Award}     color="amber"   sub="Current rank" />
       </div>
 
-      {/* Daily Quests */}
-      {studyPlan && studyPlan.tasks && studyPlan.tasks.length > 0 && (
-        <Card>
+      {studyPlan?.tasks?.length > 0 && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">Daily Quests</h2>
-            <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold">
-              {studyPlan.tasks.filter(t => t.completed).length}/{studyPlan.tasks.length} Complete
+            <h2 className="text-lg font-bold text-slate-900">Daily Quests</h2>
+            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-200">
+              {studyPlan.tasks.filter(t => t.completed).length}/{studyPlan.tasks.length} done
             </span>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {studyPlan.tasks.map((task) => (
-              <div key={task.id} className={`flex items-center gap-3 p-4 rounded-xl border-2 ${
-                task.completed ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-              }`}>
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  task.completed ? 'bg-green-500' : 'bg-blue-500'
-                }`}>
-                  {task.completed ? (
-                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <Zap className="w-5 h-5 text-white" />
-                  )}
+              <div key={task.id} className={`flex items-center gap-3 p-3.5 rounded-xl border-2
+                ${task.completed ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0
+                  ${task.completed ? 'bg-emerald-500' : 'bg-blue-600'}`}>
+                  {task.completed
+                    ? <CheckCircle className="w-4 h-4 text-white" />
+                    : <Zap className="w-4 h-4 text-white" />}
                 </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-900">{task.task}</p>
-                  <p className="text-sm text-gray-500">{task.topic}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 truncate">{task.task}</p>
+                  <p className="text-xs text-slate-500">{task.topic}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-blue-600">+{task.xp}</p>
-                  <p className="text-xs text-gray-500">XP</p>
-                </div>
+                <span className="text-sm font-bold text-blue-600 flex-shrink-0">+{task.xp} XP</span>
               </div>
             ))}
           </div>
-          <Button className="mt-4 w-full">Continue Learning</Button>
-        </Card>
+          <button onClick={() => navigate('/courses')}
+            className="w-full mt-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+            Continue Learning
+          </button>
+        </div>
       )}
 
-      {/* Courses with Progress */}
-      {courses && courses.length > 0 && (
+      {courses?.length > 0 && (
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">My Courses</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {courses.map((course, index) => {
-              const courseGradients = [
-                'from-blue-600 to-indigo-700',
-                'from-emerald-600 to-teal-700',
-                'from-orange-500 to-red-600',
-                'from-violet-600 to-purple-700',
-                'from-pink-600 to-rose-700',
-              ];
-              const courseImages = [
+          <h2 className="text-lg font-bold text-slate-900 mb-3">My Courses</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {courses.slice(0, 4).map((course, i) => {
+              const imgs = [
                 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&q=80',
                 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=80',
                 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=600&q=80',
                 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80',
-                'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=600&q=80',
               ];
-              const gradient = courseGradients[index % courseGradients.length];
-              const bgImage = courseImages[index % courseImages.length];
-              const totalChapters = course.chapters?.length || course.lessons?.length || 0;
-              const progress = Math.floor(Math.random() * 40) + 30;
-
+              const prog = Math.floor(Math.random() * 40) + 30;
               return (
-                <div key={course.id} className="rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-lg transition-all group cursor-pointer">
-                  {/* Card image header */}
-                  <div
-                    className="relative h-32 sm:h-36 flex items-end p-4"
-                    style={{
-                      backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.2)), url(${bgImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center'
-                    }}
-                  >
-                    <div className="relative z-10 w-full">
-                      <h3 className="text-white font-bold text-base sm:text-lg truncate">{course.name}</h3>
-                      <p className="text-white/70 text-xs sm:text-sm mt-0.5">{course.subject || 'General'}</p>
+                <div key={course.id} onClick={() => navigate('/courses')}
+                  className="cursor-pointer rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:shadow-md transition-all group">
+                  <div className="relative h-28" style={{
+                    backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.2)), url(${imgs[i % imgs.length]})`,
+                    backgroundSize: 'cover', backgroundPosition: 'center'
+                  }}>
+                    <div className="absolute bottom-3 left-3">
+                      <p className="text-white font-bold text-sm">{course.name}</p>
+                      <p className="text-white/70 text-xs">{course.subject || 'General'}</p>
                     </div>
+                    <ChevronRight className="absolute right-3 top-3 w-4 h-4 text-white/70 group-hover:translate-x-1 transition-transform" />
                   </div>
-
-                  {/* Card body */}
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs sm:text-sm text-gray-500 font-medium">Progress</span>
-                      <span className="text-xs sm:text-sm font-bold text-gray-900">{progress}%</span>
+                  <div className="p-3">
+                    <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                      <span>Progress</span><span className="font-bold text-slate-800">{prog}%</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
-                      <div className={`bg-gradient-to-r ${gradient} h-2 rounded-full transition-all duration-500`} style={{ width: `${progress}%` }} />
+                    <div className="w-full bg-slate-100 rounded-full h-1.5">
+                      <div className="bg-blue-600 h-full rounded-full" style={{ width: `${prog}%` }} />
                     </div>
-
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                      <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" />{totalChapters} lessons</span>
-                      <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-yellow-500" />+{(index + 1) * 50} XP</span>
-                    </div>
-
-                    <button onClick={() => window.location.href = '/courses'} className="w-full py-2 sm:py-2.5 rounded-xl font-semibold text-sm text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
-                      Continue Learning
-                      <TrendingUp className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
               );
@@ -320,188 +261,357 @@ const GrowthDashboard = ({ student, studyPlan, courses }) => {
         </div>
       )}
 
-      {/* Focus Areas - Professional Design */}
       {student.weakTopics && Object.keys(student.weakTopics).length > 0 && (
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
-              <Target className="w-5 h-5 text-amber-500" />
-              Focus Areas
-            </h2>
-            <span className="text-xs sm:text-sm text-gray-500 font-medium">
-              {Object.values(student.weakTopics).flat().length} topics to improve
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Object.entries(student.weakTopics).map(([subject, topics]) => (
-              topics.map((topic) => {
-                const subjectColors = {
-                  'Mathematics': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-600', icon: 'text-blue-500' },
-                  'Science': { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', badge: 'bg-emerald-100 text-emerald-600', icon: 'text-emerald-500' },
-                  'English': { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', badge: 'bg-violet-100 text-violet-600', icon: 'text-violet-500' },
-                };
-                const colors = subjectColors[subject] || { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-600', icon: 'text-amber-500' };
-
-                return (
-                  <div key={topic} className={`p-3 sm:p-4 ${colors.bg} border ${colors.border} rounded-xl flex items-center gap-3 group/focus hover:shadow-sm transition-all`}>
-                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg ${colors.badge} flex items-center justify-center flex-shrink-0`}>
-                      <Target className={`w-4 h-4 sm:w-5 sm:h-5 ${colors.icon}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-semibold ${colors.text} capitalize text-sm sm:text-base truncate`}>{topic}</p>
-                      <p className="text-xs text-gray-500">{subject}</p>
-                    </div>
-                    <button className={`px-2.5 py-1 sm:px-3 sm:py-1.5 ${colors.badge} rounded-lg text-xs font-semibold hover:opacity-80 transition-all flex-shrink-0`}>
-                      Practice
-                    </button>
+        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+          <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+            <Target className="w-4 h-4 text-amber-500" /> Focus Areas
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {Object.entries(student.weakTopics).map(([subj, topics]) =>
+              topics.map(topic => (
+                <div key={topic} className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Target className="w-4 h-4 text-amber-600" />
                   </div>
-                );
-              })
-            ))}
-          </div>
-        </Card>
-      )}
-    </div>
-  );
-};
-
-// Mastery Mode (15-19 years) - Clean, minimal, analytics-focused
-const MasteryDashboard = ({ student, studyPlan, courses }) => {
-  return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Minimal Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
-          {student.name}
-        </h1>
-        <p className="text-gray-500 mt-1 text-sm sm:text-base">Mastery Mode - Level {student.level_number}</p>
-      </div>
-
-      {/* Clean Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <Card>
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">XP</p>
-          <p className="text-xl sm:text-2xl font-semibold text-gray-900">{student.xp}</p>
-        </Card>
-        <Card>
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Streak</p>
-          <p className="text-xl sm:text-2xl font-semibold text-gray-900">{student.streak} days</p>
-        </Card>
-        <Card>
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Progress</p>
-          <p className="text-xl sm:text-2xl font-semibold text-gray-900">{student.progress}%</p>
-        </Card>
-        <Card>
-          <p className="text-xs sm:text-sm text-gray-500 mb-1">Attendance</p>
-          <p className="text-xl sm:text-2xl font-semibold text-gray-900">{student.attendance}%</p>
-        </Card>
-      </div>
-
-      {/* Study Plan */}
-      {studyPlan && studyPlan.tasks && studyPlan.tasks.length > 0 && (
-        <Card>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Today's Schedule</h2>
-          <div className="space-y-2">
-            {studyPlan.tasks.map((task) => (
-              <div key={task.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  className="w-4 h-4 text-blue-600 rounded"
-                  readOnly
-                />
-                <div className="flex-1">
-                  <p className="text-gray-900">{task.task}</p>
-                  <p className="text-sm text-gray-500">{task.topic} • {task.xp} XP</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Button className="mt-4 w-full">Start Session</Button>
-        </Card>
-      )}
-
-      {/* Courses Table */}
-      {courses && courses.length > 0 && (
-        <Card>
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Courses</h2>
-          <div className="space-y-3">
-            {courses.map((course) => (
-              <div key={course.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <BookOpen className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium text-gray-900 text-sm sm:text-base truncate">{course.name}</p>
-                    <p className="text-xs sm:text-sm text-gray-500">{course.chapters?.length || 0} chapters</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 capitalize truncate">{topic}</p>
+                    <p className="text-xs text-slate-500">{subj}</p>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 pl-8 sm:pl-0">
-                  <div className="w-24 sm:w-32">
-                    <ProgressBar progress={65} />
-                  </div>
-                  <Button variant="secondary" className="text-xs sm:text-sm">Continue</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Areas for Improvement */}
-      {student.weakTopics && Object.keys(student.weakTopics).length > 0 && (
-        <Card>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Areas for Improvement</h2>
-          <div className="space-y-2">
-            {Object.entries(student.weakTopics).map(([subject, topics]) => (
-              topics.map((topic) => (
-                <div key={topic} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-gray-900 capitalize">{topic}</span>
-                  <span className="text-sm text-gray-500">{subject}</span>
+                  <button onClick={() => navigate('/courses')}
+                    className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-200 transition-colors flex-shrink-0">
+                    Practice
+                  </button>
                 </div>
               ))
-            ))}
+            )}
           </div>
-        </Card>
+        </div>
       )}
     </div>
   );
 };
 
-// Main Dashboard Component
+// ─── MASTERY DASHBOARD (age ≥ 15) — 12th Grade ────────────────
+const MasteryDashboard = ({ student, studyPlan, courses }) => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const xpToNext = 1000;
+  const xpProgress = Math.min((student.xp / xpToNext) * 100, 100);
+
+  const todayDate = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const subjectImages = {
+    Math: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&q=80',
+    Science: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=80',
+    English: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80',
+    Physics: 'https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=600&q=80',
+    Chemistry: 'https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=600&q=80',
+    'Computer Science': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=80',
+  };
+
+  const tabs = ['overview', 'courses', 'schedule'];
+
+  // Quick tips for 12th grade students
+  const tips = [
+    { icon: Target,    text: 'Solve 3 previous year questions daily', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+    { icon: Clock,     text: 'Use Pomodoro: 25 min study, 5 min break', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+    { icon: BarChart2, text: 'Review weak topics before the exam week', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+  ];
+
+  return (
+    <div className="space-y-5 md:space-y-6">
+
+      {/* ── Header Banner ── */}
+      <div className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-5 md:p-7 overflow-hidden">
+        {/* bg decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-sky-500/10 rounded-full translate-y-1/2" />
+
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 pulse-dot" />
+              <span className="text-slate-400 text-sm font-medium">{todayDate}</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
+              Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'}, {student.name.split(' ')[0]}!
+            </h1>
+            <p className="text-slate-400 text-sm mt-1">
+              Class 12 · Mastery Mode · Level {student.level_number}
+            </p>
+          </div>
+
+          {/* XP ring */}
+          <div className="flex items-center gap-4">
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <ProgressRing value={xpProgress} size={80} stroke={6} color="#3b82f6" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-white font-bold text-sm leading-none">{Math.round(xpProgress)}%</span>
+                <span className="text-slate-400 text-xs">XP</span>
+              </div>
+            </div>
+            <div className="text-right hidden sm:block">
+              <p className="text-white font-bold text-2xl">{student.xp}</p>
+              <p className="text-slate-400 text-xs">of {xpToNext} XP</p>
+              <p className="text-blue-400 text-xs font-semibold mt-1">Level {student.level_number + 1} soon!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Key Stats ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Total XP"     value={student.xp}             icon={Zap}        color="blue"    sub={`Lv ${student.level_number}`} />
+        <StatCard label="Study Streak" value={`${student.streak}d`}   icon={Flame}      color="rose"    sub="Keep it up!" />
+        <StatCard label="Progress"     value={`${student.progress}%`} icon={TrendingUp} color="emerald" sub="Overall" />
+        <StatCard label="Attendance"   value={`${student.attendance}%`} icon={Calendar} color="amber"   sub={student.attendance >= 80 ? 'Excellent' : 'Improve this'} />
+      </div>
+
+      {/* ── Tab Selector ── */}
+      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+        {tabs.map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all
+              ${activeTab === tab ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* ── OVERVIEW TAB ── */}
+      {activeTab === 'overview' && (
+        <div className="space-y-5">
+
+          {/* Today's Study Tips */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5">
+            <h2 className="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-500" /> Study Tips for Today
+            </h2>
+            <div className="space-y-2.5">
+              {tips.map((tip, i) => {
+                const TipIcon = tip.icon;
+                return (
+                  <div key={i} className={`flex items-center gap-3 p-3 ${tip.bg} border ${tip.border} rounded-xl`}>
+                    <div className={`w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0`}>
+                      <TipIcon className={`w-4 h-4 ${tip.color}`} />
+                    </div>
+                    <p className="text-sm font-medium text-slate-700">{tip.text}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Study Plan Quick View */}
+          {studyPlan?.tasks?.length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold text-slate-900">Today's Schedule</h2>
+                <button onClick={() => navigate('/study-plan')}
+                  className="flex items-center gap-1 text-blue-600 text-sm font-medium hover:text-blue-700">
+                  View all <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="space-y-2.5">
+                {studyPlan.tasks.slice(0, 4).map((task) => (
+                  <div key={task.id} className={`flex items-center gap-3 p-3.5 rounded-xl border-2
+                    ${task.completed ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0
+                      ${task.completed ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300'}`}>
+                      {task.completed && <CheckCircle className="w-3 h-3 text-white" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold truncate ${task.completed ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                        {task.task}
+                      </p>
+                      <p className="text-xs text-slate-400">{task.topic}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-xs font-bold text-blue-600">+{task.xp} XP</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => navigate('/study-plan')}
+                className="w-full mt-4 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors">
+                Open Study Planner
+              </button>
+            </div>
+          )}
+
+          {/* Weak Topics */}
+          {student.weakTopics && Object.keys(student.weakTopics).length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-rose-500" /> Areas to Strengthen
+                </h2>
+                <span className="text-xs text-slate-400 font-medium">Focus this week</span>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {Object.entries(student.weakTopics).map(([subj, topics]) =>
+                  topics.map(topic => (
+                    <button key={topic} onClick={() => navigate('/courses')}
+                      className="flex items-center gap-2 px-3.5 py-2 bg-rose-50 border border-rose-200 rounded-xl text-sm font-medium text-rose-700 hover:bg-rose-100 transition-colors">
+                      <Circle className="w-2 h-2 fill-rose-400 text-rose-400" />
+                      <span className="capitalize">{topic}</span>
+                      <span className="text-rose-400 text-xs">· {subj}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── COURSES TAB ── */}
+      {activeTab === 'courses' && (
+        <div className="space-y-4">
+          {courses?.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {courses.map((course, i) => {
+                const img = subjectImages[course.subject] || subjectImages.Science;
+                const prog = Math.floor(Math.random() * 40) + 35;
+                const totalChapters = course.chapters?.length || course.lessons?.length || 0;
+                return (
+                  <div key={course.id} onClick={() => navigate('/courses')}
+                    className="cursor-pointer rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-sm hover:shadow-lg transition-all group">
+                    <div className="relative h-36" style={{
+                      backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.2)), url(${img})`,
+                      backgroundSize: 'cover', backgroundPosition: 'center'
+                    }}>
+                      <div className="absolute inset-x-0 bottom-0 p-4">
+                        <h3 className="text-white font-bold text-base">{course.name}</h3>
+                        <p className="text-white/70 text-xs mt-0.5">{course.subject || 'General'} · {totalChapters} chapters</p>
+                      </div>
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full border border-white/30">
+                        <BookOpen className="w-3 h-3 text-white" />
+                        <span className="text-white text-xs font-semibold">{prog}%</span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex justify-between text-xs text-slate-500 mb-2">
+                        <span>Progress</span><span className="font-bold text-slate-800">{prog}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-2 mb-3">
+                        <div className="bg-blue-600 h-full rounded-full transition-all" style={{ width: `${prog}%` }} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-xs text-slate-400">
+                          <Star className="w-3 h-3 text-amber-500" /> +{(i + 1) * 50} XP
+                        </div>
+                        <button className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1">
+                          Continue <ArrowUpRight className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+              <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-500 font-medium">No courses assigned yet</p>
+              <p className="text-slate-400 text-sm mt-1">Your mentor will assign courses soon</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── SCHEDULE TAB ── */}
+      {activeTab === 'schedule' && (
+        <div className="space-y-4">
+          {studyPlan?.tasks?.length > 0 ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-base font-bold text-slate-900">Full Schedule</h2>
+                <span className="px-3 py-1 bg-slate-100 rounded-full text-sm text-slate-600 font-medium">
+                  {studyPlan.tasks.filter(t => t.completed).length}/{studyPlan.tasks.length} done
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="mb-5">
+                <div className="flex justify-between text-sm text-slate-500 mb-2">
+                  <span>Daily Progress</span>
+                  <span className="font-bold text-slate-800">
+                    {Math.round((studyPlan.tasks.filter(t => t.completed).length / studyPlan.tasks.length) * 100)}%
+                  </span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2">
+                  <div className="bg-emerald-500 h-full rounded-full transition-all"
+                    style={{ width: `${(studyPlan.tasks.filter(t => t.completed).length / studyPlan.tasks.length) * 100}%` }} />
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                {studyPlan.tasks.map((task, idx) => (
+                  <div key={task.id} className={`flex items-start gap-3.5 p-4 rounded-xl border-2
+                    ${task.completed ? 'border-emerald-200 bg-emerald-50' : 'border-slate-100 hover:border-slate-200'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-bold
+                      ${task.completed ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                      {task.completed ? <CheckCircle className="w-4 h-4" /> : idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold ${task.completed ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                        {task.task}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5">{task.topic}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-xs font-bold text-blue-600">+{task.xp} XP</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={() => navigate('/study-plan')}
+                className="w-full mt-4 py-2.5 border-2 border-slate-200 text-slate-700 text-sm font-semibold rounded-xl hover:border-slate-300 hover:bg-slate-50 transition-all">
+                Manage Schedule in Study Planner
+              </button>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+              <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-500 font-medium">No schedule yet</p>
+              <button onClick={() => navigate('/study-plan')}
+                className="mt-3 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+                Create Study Plan
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── MAIN COMPONENT ───────────────────────────────────────────
 const StudentDashboard = () => {
   const { appData, currentUser } = useApp();
-  
-  console.log('StudentDashboard - currentUser:', currentUser);
-  console.log('StudentDashboard - appData.students:', appData.students);
-  
+
   const student = appData.students.find(s => s.id === currentUser?.id);
-  
-  console.log('StudentDashboard - found student:', student);
-  
-  // If no student found, show error
+
   if (!student) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-gray-500">Loading student data...</p>
-          <p className="text-xs text-gray-400 mt-2">Current User ID: {currentUser?.id}</p>
-          <p className="text-xs text-gray-400">Available Students: {appData.students.map(s => s.id).join(', ')}</p>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-slate-500 font-medium">Loading your dashboard…</p>
         </div>
       </div>
     );
   }
-  
-  const studyPlan = appData.studyPlans.find(p => p.studentId === student.id);
-  const courses = appData.courses.filter(c => student.subjects && student.subjects.includes(c.subject));
 
-  // Determine which dashboard to show based on age
-  if (student.age <= 10) {
-    return <FoundationDashboard student={student} studyPlan={studyPlan} courses={courses} />;
-  } else if (student.age <= 14) {
-    return <GrowthDashboard student={student} studyPlan={studyPlan} courses={courses} />;
-  } else {
-    return <MasteryDashboard student={student} studyPlan={studyPlan} courses={courses} />;
-  }
+  const studyPlan = appData.studyPlans.find(p => p.studentId === student.id);
+  const courses   = appData.courses.filter(c => student.subjects?.includes(c.subject));
+
+  if (student.age <= 10) return <FoundationDashboard student={student} studyPlan={studyPlan} courses={courses} />;
+  if (student.age <= 14) return <GrowthDashboard     student={student} studyPlan={studyPlan} courses={courses} />;
+  return                        <MasteryDashboard    student={student} studyPlan={studyPlan} courses={courses} />;
 };
 
 export default StudentDashboard;

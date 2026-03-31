@@ -366,38 +366,3 @@ const _mockTopics = [
   },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SECTION 8: initializeMockData() — for seedFirestore
-// Uses canonical constants above so seeding stays in sync with app data.
-// ─────────────────────────────────────────────────────────────────────────────
-export const initializeMockData = () => ({
-  students: MOCK_APP_STUDENTS,
-  mentors: MOCK_APP_MENTORS,
-  courses: _mockCourses,
-  chapters: _mockChapters,
-  topics: _mockTopics,
-  sessions: MOCK_SESSIONS,
-  doubts: MOCK_DOUBTS,
-  studyPlans: MOCK_STUDY_PLANS,
-  analytics: {
-    totalStudents: MOCK_APP_STUDENTS.length,
-    activeMentors: MOCK_APP_MENTORS.length,
-    avgProgress: Math.round(MOCK_APP_STUDENTS.reduce((s, st) => s + st.progress, 0) / MOCK_APP_STUDENTS.length),
-    attendanceRate: Math.round(MOCK_APP_STUDENTS.reduce((s, st) => s + st.attendance, 0) / MOCK_APP_STUDENTS.length),
-    totalSessions: MOCK_SESSIONS.length,
-    avgImprovement: Math.round(MOCK_APP_MENTORS.reduce((s, m) => s + m.avgImprovement, 0) / MOCK_APP_MENTORS.length),
-    activeCourses: _mockCourses.length,
-    weakSubjects: [
-      { subject: 'Math', percentage: 70 },
-      { subject: 'Science', percentage: 40 },
-    ],
-    weeklyProgress: [
-      { week: 'Week 1', progress: 45 },
-      { week: 'Week 2', progress: 52 },
-      { week: 'Week 3', progress: 58 },
-      { week: 'Week 4', progress: 63 },
-    ],
-  },
-  currentUser: null,
-  currentRole: 'student',
-});

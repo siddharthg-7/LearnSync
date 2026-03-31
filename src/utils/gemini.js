@@ -14,7 +14,7 @@ export const callGemini = async (prompt) => {
   }
   try {
     // Use Gemini 2.5 Flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -27,7 +27,7 @@ export const callGemini = async (prompt) => {
   } catch (error) {
     console.error('[Gemini] API Error:', error);
     console.error('[Gemini] Request prompt:', prompt);
-    
+
     return {
       success: false,
       data: `I'm having trouble connecting to the AI service right now. Error: ${error.message || 'Unknown error'}. Please check your API key and try again.`
@@ -71,7 +71,7 @@ Focus on:
 
   try {
     const result = await callGemini(prompt);
-    
+
     if (result.success) {
       // Try to parse JSON response
       try {

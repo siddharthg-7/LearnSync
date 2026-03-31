@@ -35,7 +35,50 @@ const Courses = () => {
 
   const student = appData.students.find(s => s.id === currentUser?.id) || appData.students[0];
   const level = student?.level || 'foundation';
-  const courses = courseData[level] || courseData.foundation;
+  const baseCourses = courseData[level] || courseData.foundation;
+
+  // Convert mentor-created courses (from appData) into the same format
+  const mentorCourses = appData.courses
+    .filter(c => c.id?.startsWith?.('course_'))
+    .map(mc => {
+      // Build lessons from chapters & topics
+      const chapters = appData.chapters.filter(ch => (mc.chapters || []).includes(ch.id));
+      const lessons = chapters.map(ch => {
+        const topics = appData.topics.filter(t => (ch.topics || []).includes(t.id));
+        return {
+          id: ch.id,
+          title: ch.name,
+          subtopics: topics.map(t => ({
+            id: t.id,
+            title: t.name,
+            content: t.content || t.summary || 'Content from mentor',
+            duration: '20 min',
+            keyPoints: t.keyPoints || [],
+            examples: t.examples || [],
+          })),
+          quiz: topics[0]?.questions?.length > 0
+            ? { questions: topics[0].questions.map(q => ({ q: q.question, opts: q.options, ans: q.correct })) }
+            : { questions: [] }
+        };
+      });
+
+      // Map subject to iconType
+      const subjectIconMap = { Math: 'math', Science: 'science', English: 'english', Physics: 'physics', Chemistry: 'chemistry', History: 'history' };
+
+      return {
+        id: mc.id,
+        name: mc.name,
+        iconType: subjectIconMap[mc.subject] || 'math',
+        color: 'from-blue-500 to-indigo-600',
+        description: mc.description || `${mc.subject} - ${mc.level || 'beginner'}`,
+        lessons,
+        isMentorCreated: true,
+      };
+    })
+    .filter(mc => mc.lessons.length > 0); // Only show courses that have at least one chapter
+
+  // Combine: hardcoded curriculum + mentor-created courses
+  const courses = [...baseCourses, ...mentorCourses];
 
   const markComplete = (subtopicId) => {
     if (!completedSubtopics.includes(subtopicId)) {
